@@ -5,181 +5,389 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ZapBot — Plataforma de Automação WhatsApp</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-  *{box-sizing:border-box;margin:0;padding:0}
-  :root{
-    --g:#25D366;--gd:#128C7E;--gs:#DCF8C6;
-    --bg:#f5f6fa;--card:#fff;--border:#e5e7eb;
-    --text:#111827;--muted:#6b7280;--light:#f9fafb;
-    --sidebar:230px;--shadow:0 1px 3px rgba(0,0,0,.08);
-  }
-  body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
-  .app{display:flex;height:100vh}
-
-  /* SIDEBAR */
-  .sidebar{width:var(--sidebar);background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;box-shadow:var(--shadow)}
-  .logo{padding:20px 18px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
-  .logo-icon{width:34px;height:34px;background:var(--g);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:700;flex-shrink:0}
-  .logo-name{font-size:16px;font-weight:600;color:var(--text)}
-  .logo-tag{font-size:10px;color:var(--muted);font-weight:400}
-  nav{flex:1;padding:12px 10px;overflow-y:auto}
-  .nav-section{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:10px 8px 4px;margin-top:4px}
-  .nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;cursor:pointer;color:var(--muted);font-size:13px;font-weight:500;transition:all .15s;margin-bottom:1px;user-select:none}
-  .nav-item:hover{background:var(--light);color:var(--text)}
-  .nav-item.active{background:var(--gs);color:#065f46}
-  .nav-icon{font-size:15px;width:18px;text-align:center;flex-shrink:0}
-  .badge{margin-left:auto;background:var(--g);color:#fff;font-size:10px;padding:1px 6px;border-radius:10px;font-weight:600}
-  .sidebar-footer{padding:14px;border-top:1px solid var(--border)}
-  .wa-conn{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--gs);border-radius:8px;cursor:pointer}
-  .dot-g{width:7px;height:7px;border-radius:50%;background:var(--g);flex-shrink:0}
-  .wa-info{font-size:11px;color:#065f46;line-height:1.4}
-  .wa-info strong{display:block;font-size:12px;font-weight:600}
-
-  /* MAIN */
-  .main{flex:1;overflow:hidden;display:flex;flex-direction:column}
-  .topbar{padding:0 24px;height:56px;background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:var(--shadow)}
-  .page-title{font-size:16px;font-weight:600}
-  .topbar-right{display:flex;align-items:center;gap:8px}
-  .btn{padding:6px 14px;border-radius:8px;font-size:13px;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--text);font-family:inherit;font-weight:500;transition:all .15s}
-  .btn:hover{background:var(--light)}
-  .btn-primary{background:var(--g);border-color:var(--g);color:#fff}
-  .btn-primary:hover{background:var(--gd)}
-  .content{flex:1;overflow-y:auto;padding:24px}
-  .page{display:none}.page.active{display:block}
-
-  /* CARDS & GRID */
-  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 20px;box-shadow:var(--shadow)}
-  .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-  .card-title{font-size:14px;font-weight:600}
-  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-  .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
-  .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-  .g-gap{margin-bottom:16px}
-
-  /* METRIC CARDS */
-  .metric{background:var(--light);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
-  .metric-label{font-size:11px;color:var(--muted);font-weight:500;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
-  .metric-value{font-size:24px;font-weight:600;color:var(--text)}
-  .metric-delta{font-size:11px;color:#065f46;margin-top:3px;font-weight:500}
-
-  /* STATUS PILLS */
-  .pill{font-size:11px;padding:2px 9px;border-radius:20px;font-weight:600}
-  .pill-green{background:var(--gs);color:#065f46}
-  .pill-yellow{background:#fef9c3;color:#854d0e}
-  .pill-gray{background:var(--light);color:var(--muted);border:1px solid var(--border)}
-
-  /* FORM */
-  label{font-size:12px;color:var(--muted);display:block;margin-bottom:5px;font-weight:500}
-  input[type=text],input[type=tel],input[type=number],input[type=email],textarea,select{
-    width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;
-    background:var(--card);color:var(--text);font-size:13px;font-family:inherit;
-    outline:none;transition:border .15s
-  }
-  input:focus,textarea:focus,select:focus{border-color:var(--g);box-shadow:0 0 0 3px rgba(37,211,102,.1)}
-  textarea{resize:vertical;min-height:72px}
-  .form-group{margin-bottom:14px}
-
-  /* FLOW CARDS */
-  .flow-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:8px;cursor:pointer;transition:all .15s}
-  .flow-card:hover{border-color:var(--g);box-shadow:0 0 0 3px rgba(37,211,102,.08)}
-  .flow-name{font-size:13px;font-weight:600}
-  .flow-desc{font-size:12px;color:var(--muted);margin-top:4px}
-
-  /* CHAT PREVIEW */
-  .chat-wrap{background:#e5ddd5;border-radius:10px;padding:14px;min-height:200px;display:flex;flex-direction:column;gap:8px}
-  .bubble{padding:8px 12px;border-radius:10px;font-size:12px;max-width:80%;line-height:1.5}
-  .bubble-out{background:var(--gs);color:#065f46;border-radius:10px 10px 2px 10px;align-self:flex-end}
-  .bubble-in{background:#fff;color:var(--text);border-radius:10px 10px 10px 2px;align-self:flex-start}
-
-  /* KEYWORDS */
-  .kw-tag{display:inline-flex;align-items:center;gap:5px;background:var(--light);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:12px;margin:3px}
-  .kw-tag .rm{cursor:pointer;color:var(--muted);font-size:14px;line-height:1}
-  .kw-tag .rm:hover{color:#dc2626}
-  .tags-box{display:flex;flex-wrap:wrap;min-height:38px;border:1px solid var(--border);border-radius:8px;padding:4px 8px;background:var(--card);margin-bottom:8px;align-items:center;gap:2px}
-
-  /* STATS BAR */
-  .stat-row{display:flex;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;gap:10px}
-  .stat-row:last-child{border-bottom:none}
-  .stat-bar{flex:1;height:5px;background:var(--light);border-radius:3px;overflow:hidden}
-  .stat-fill{height:100%;background:var(--g);border-radius:3px}
-
-  /* CONVERSATIONS */
-  .conv-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:opacity .15s}
-  .conv-item:hover{opacity:.75}
-  .conv-item:last-child{border-bottom:none}
-  .avatar{width:38px;height:38px;border-radius:50%;background:var(--gs);color:#065f46;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0}
-  .conv-name{font-size:13px;font-weight:600}
-  .conv-last{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .conv-time{font-size:11px;color:var(--muted);text-align:right;flex-shrink:0}
-
-  /* TOGGLES */
-  .sw-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
-  .sw-row:last-child{border-bottom:none}
-  .sw-label{font-size:13px;font-weight:500}
-  .sw-sub{font-size:11px;color:var(--muted);margin-top:1px}
-  .toggle{position:relative;display:inline-block;width:38px;height:22px;flex-shrink:0}
-  .toggle input{opacity:0;width:0;height:0}
-  .sl{position:absolute;inset:0;background:var(--border);border-radius:22px;cursor:pointer;transition:.2s}
-  .sl:before{position:absolute;content:'';height:16px;width:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
-  input:checked+.sl{background:var(--g)}
-  input:checked+.sl:before{transform:translateX(16px)}
-
-  /* STEPS */
-  .step-row{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
-  .step-row:last-child{border-bottom:none}
-  .step-num{width:22px;height:22px;border-radius:50%;background:var(--g);color:#fff;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
-  .step-title{font-size:13px;font-weight:500}
-  .step-sub{font-size:12px;color:var(--muted);margin-top:2px}
-
-  /* TABS */
-  .tab-row{display:flex;gap:2px;background:var(--light);border-radius:8px;padding:3px;margin-bottom:16px}
-  .tab{flex:1;text-align:center;padding:6px 8px;font-size:12px;font-weight:500;border-radius:6px;cursor:pointer;color:var(--muted);user-select:none;transition:all .15s}
-  .tab.active{background:var(--card);color:var(--text);border:1px solid var(--border)}
-
-  /* CONN CARDS */
-  .conn-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
-  .conn-item:last-child{border-bottom:none}
-  .conn-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
-  .conn-name{font-size:13px;font-weight:600}
-  .conn-desc{font-size:11px;color:var(--muted);margin-top:1px}
-
-  /* MODAL */
-  .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:100;align-items:center;justify-content:center}
-  .modal-bg.open{display:flex}
-  .modal{background:var(--card);border-radius:14px;padding:24px;width:460px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,.2);border:1px solid var(--border)}
-  .modal-title{font-size:16px;font-weight:600;margin-bottom:18px}
-  .modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
-
-  /* CTA */
-  .cta-item{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)}
-  .cta-item:last-child{border-bottom:none}
-  .cta-icon{width:34px;height:34px;border-radius:8px;background:var(--gs);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
-  .cta-title{font-size:13px;font-weight:500}
-  .cta-sub{font-size:11px;color:var(--muted)}
-
-  /* PLAN */
-  .plan-box{background:var(--gs);border-radius:10px;padding:14px;text-align:center;margin-bottom:14px}
-  .plan-name{font-size:11px;color:#065f46;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
-  .plan-price{font-size:28px;font-weight:700;color:#065f46}
-  .plan-period{font-size:13px;font-weight:400;color:#065f46}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--g:#25D366;--gd:#128C7E;--gl:#e8faf0;--gs:#DCF8C6;--bg:#f5f6fa;--card:#fff;--border:#e5e7eb;--text:#111827;--muted:#6b7280;--light:#f9fafb;--blue:#3b82f6;--blueg:#eff6ff;--red:#ef4444;--redg:#fef2f2;--yellow:#f59e0b;--yellowg:#fffbeb;--purple:#8b5cf6;--purpleg:#f5f3ff;--sidebar:232px;--sh:0 1px 3px rgba(0,0,0,.07)}
+body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg);color:var(--text);min-height:100vh}
+.screen{display:none;min-height:100vh}.screen.active{display:flex}
+.auth-wrap{display:flex;min-height:100vh;width:100%}
+.auth-left{flex:1;background:linear-gradient(135deg,#064e3b 0%,#065f46 40%,#047857 100%);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:60px 48px;position:relative;overflow:hidden}
+.auth-left::before{content:'';position:absolute;top:-80px;right:-80px;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,.04)}
+.auth-brand{display:flex;align-items:center;gap:12px;margin-bottom:48px}
+.auth-brand-icon{width:44px;height:44px;background:#25D366;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;box-shadow:0 4px 14px rgba(37,211,102,.4)}
+.auth-brand-name{font-size:22px;font-weight:700;color:#fff}
+.auth-headline{font-size:32px;font-weight:700;color:#fff;line-height:1.25;margin-bottom:16px;max-width:340px}
+.auth-sub{font-size:15px;color:rgba(255,255,255,.65);line-height:1.7;max-width:320px;margin-bottom:48px}
+.auth-feature{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.auth-feature-icon{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.auth-feature-text{font-size:13px;color:rgba(255,255,255,.8);line-height:1.4}
+.auth-right{width:480px;flex-shrink:0;background:#fff;display:flex;align-items:center;justify-content:center;padding:48px 40px;overflow-y:auto}
+.auth-form-wrap{width:100%;max-width:360px}
+.auth-title{font-size:24px;font-weight:700;color:var(--text);margin-bottom:6px}
+.auth-desc{font-size:14px;color:var(--muted);margin-bottom:28px;line-height:1.5}
+.form-label{font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
+.form-input{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;color:var(--text);background:#fff;outline:none;transition:all .2s}
+.form-input:focus{border-color:var(--g);box-shadow:0 0 0 3px rgba(37,211,102,.1)}
+.form-group{margin-bottom:16px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.btn-full{width:100%;padding:11px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-green{background:var(--g);color:#fff}.btn-green:hover{background:var(--gd);transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,211,102,.3)}
+.btn-outline{background:#fff;color:var(--text);border:1.5px solid var(--border)}.btn-outline:hover{background:var(--light)}
+.auth-divider{text-align:center;font-size:13px;color:var(--muted);margin:18px 0;display:flex;align-items:center;gap:10px}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.auth-link{color:var(--g);font-weight:600;cursor:pointer}.auth-link:hover{text-decoration:underline}
+.auth-footer{text-align:center;font-size:13px;color:var(--muted);margin-top:20px}
+.err-msg{background:var(--redg);border:1px solid #fecaca;border-radius:8px;padding:10px 14px;font-size:13px;color:#b91c1c;margin-bottom:16px;display:none}
+.err-msg.show{display:block}
+.ok-msg{background:var(--gl);border:1px solid #a7f3d0;border-radius:8px;padding:10px 14px;font-size:13px;color:#065f46;margin-bottom:16px;display:none}
+.ok-msg.show{display:block}
+.plan-select-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px}
+.plan-opt{border:2px solid var(--border);border-radius:10px;padding:12px 10px;cursor:pointer;text-align:center;transition:all .2s;user-select:none}
+.plan-opt:hover{border-color:#a7f3d0}.plan-opt.selected{border-color:var(--g);background:var(--gl)}
+.plan-opt-name{font-size:13px;font-weight:700;margin-bottom:2px}
+.plan-opt-price{font-size:12px;color:var(--muted)}.plan-opt-price strong{color:var(--g);font-size:15px}
+.pending-wrap{width:100%;min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:24px}
+.pending-card{background:#fff;border-radius:20px;padding:48px 40px;max-width:480px;width:100%;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.1);border:1px solid var(--border)}
+.pending-icon{width:72px;height:72px;border-radius:50%;background:var(--yellowg);display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 20px}
+.pending-title{font-size:22px;font-weight:700;margin-bottom:10px}
+.pending-desc{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:24px}
+.pending-steps{text-align:left;background:var(--light);border-radius:10px;padding:16px;margin-bottom:24px}
+.pending-step{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;font-size:13px;color:var(--muted)}.pending-step:last-child{margin-bottom:0}
+.pending-step-num{width:20px;height:20px;border-radius:50%;background:var(--g);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.pricing-wrap{width:100%;min-height:100vh;background:var(--bg);overflow-y:auto;display:block}
+.pricing-nav{background:#fff;border-bottom:1px solid var(--border);padding:0 40px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;box-shadow:var(--sh)}
+.pricing-body{max-width:1100px;margin:0 auto;padding:60px 24px 80px}
+.pricing-header{text-align:center;margin-bottom:52px}
+.pricing-eyebrow{font-size:12px;font-weight:700;color:var(--g);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
+.pricing-title{font-size:40px;font-weight:800;color:var(--text);line-height:1.2;margin-bottom:14px}
+.pricing-sub{font-size:17px;color:var(--muted);max-width:500px;margin:0 auto;line-height:1.6}
+.toggle-row{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:24px;font-size:14px;color:var(--muted)}
+.toggle-pill{position:relative;width:46px;height:26px;flex-shrink:0}
+.toggle-pill input{opacity:0;width:0;height:0}
+.tp-sl{position:absolute;inset:0;background:var(--border);border-radius:26px;cursor:pointer;transition:.2s}
+.tp-sl:before{position:absolute;content:'';height:20px;width:20px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+input:checked+.tp-sl{background:var(--g)}
+input:checked+.tp-sl:before{transform:translateX(20px)}
+.save-badge{background:var(--gs);color:#065f46;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px}
+.plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-bottom:60px}
+.plan-card{background:#fff;border:2px solid var(--border);border-radius:20px;padding:32px 28px;position:relative;transition:all .2s}
+.plan-card:hover{border-color:#a7f3d0;box-shadow:0 4px 16px rgba(0,0,0,.1)}
+.plan-card.popular{border-color:var(--g)}
+.popular-badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--g);color:#fff;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;white-space:nowrap}
+.plan-name{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.plan-price{font-size:42px;font-weight:800;color:var(--text);line-height:1}
+.plan-period{font-size:15px;font-weight:400;color:var(--muted)}
+.plan-desc{font-size:13px;color:var(--muted);margin:8px 0 24px;min-height:36px;line-height:1.5}
+.plan-btn{width:100%;padding:11px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;border:2px solid var(--border);background:#fff;color:var(--text);font-family:inherit;transition:all .2s;margin-bottom:24px}
+.plan-btn:hover{border-color:var(--g);color:var(--g)}
+.plan-card.popular .plan-btn{background:var(--g);border-color:var(--g);color:#fff}
+.plan-card.popular .plan-btn:hover{background:var(--gd)}
+.plan-features{list-style:none}
+.plan-feat{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--muted);margin-bottom:10px;line-height:1.4}
+.plan-feat::before{content:'✓';color:var(--g);font-weight:700;font-size:13px;flex-shrink:0;margin-top:1px}
+.plan-feat.no{color:#d1d5db}.plan-feat.no::before{content:'✗';color:#d1d5db}
+.faq-section{max-width:680px;margin:0 auto}
+.faq-title{font-size:24px;font-weight:700;text-align:center;margin-bottom:32px}
+.faq-item{border-bottom:1px solid var(--border);padding:18px 0;cursor:pointer}
+.faq-q{font-size:15px;font-weight:600;display:flex;justify-content:space-between;align-items:center;user-select:none}
+.faq-a{font-size:14px;color:var(--muted);line-height:1.7;margin-top:12px;display:none}
+.faq-item.open .faq-a{display:block}
+.faq-chevron{font-size:18px;transition:transform .2s;color:var(--muted)}
+.faq-item.open .faq-chevron{transform:rotate(180deg)}
+.app-wrap{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:var(--sidebar);background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
+.logo{padding:20px 18px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.logo-icon{width:34px;height:34px;background:var(--g);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff}
+.logo-name{font-size:15px;font-weight:700}.logo-plan{font-size:10px;color:var(--muted)}
+nav{flex:1;padding:10px 8px;overflow-y:auto}
+.nav-section{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:10px 8px 4px;margin-top:4px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;cursor:pointer;color:var(--muted);font-size:13px;font-weight:500;transition:all .15s;margin-bottom:1px;user-select:none}
+.nav-item:hover{background:var(--light);color:var(--text)}.nav-item.active{background:var(--gs);color:#065f46}
+.nav-icon{font-size:15px;width:18px;text-align:center;flex-shrink:0}
+.nav-badge{margin-left:auto;background:var(--g);color:#fff;font-size:10px;padding:1px 6px;border-radius:10px;font-weight:700}
+.nav-badge.yellow{background:var(--yellow)}
+.sidebar-footer{padding:12px;border-top:1px solid var(--border)}
+.user-pill{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;transition:all .15s}
+.user-pill:hover{background:var(--light)}
+.user-av{width:30px;height:30px;border-radius:50%;background:var(--gs);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#065f46;flex-shrink:0}
+.user-name{font-size:12px;font-weight:600;line-height:1.2}.user-role{font-size:10px;color:var(--muted)}
+.logout-btn{margin-left:auto;font-size:11px;color:var(--muted);cursor:pointer;padding:3px 6px;border-radius:4px;border:none;background:none;font-family:inherit}
+.logout-btn:hover{background:var(--light);color:var(--text)}
+.main{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.topbar{padding:0 24px;height:56px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:var(--sh)}
+.page-title{font-size:16px;font-weight:700}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.btn{padding:6px 14px;border-radius:8px;font-size:13px;cursor:pointer;border:1.5px solid var(--border);background:#fff;color:var(--text);font-family:inherit;font-weight:500;transition:all .15s}
+.btn:hover{background:var(--light)}.btn-primary{background:var(--g);border-color:var(--g);color:#fff}.btn-primary:hover{background:var(--gd)}
+.content{flex:1;overflow-y:auto;padding:24px}
+.page{display:none}.page.active{display:block}
+.card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:18px 20px;box-shadow:var(--sh)}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.card-title{font-size:14px;font-weight:700}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.g-gap{margin-bottom:16px}
+.metric{background:var(--light);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+.metric-label{font-size:11px;color:var(--muted);font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
+.metric-val{font-size:26px;font-weight:700}.metric-delta{font-size:11px;color:#065f46;margin-top:2px;font-weight:500}
+.pill{font-size:11px;padding:2px 9px;border-radius:20px;font-weight:600;display:inline-block}
+.pill-g{background:var(--gs);color:#065f46}.pill-y{background:var(--yellowg);color:#92400e;border:1px solid #fde68a}
+.pill-r{background:var(--redg);color:#991b1b}.pill-b{background:var(--blueg);color:#1e40af;border:1px solid #bfdbfe}
+.pill-p{background:var(--purpleg);color:#5b21b6;border:1px solid #ddd6fe}.pill-gray{background:var(--light);color:var(--muted);border:1px solid var(--border)}
+label{font-size:12px;color:var(--muted);display:block;margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+input[type=text],input[type=tel],input[type=number],input[type=email],input[type=password],textarea,select{width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;background:#fff;color:var(--text);font-size:13px;font-family:inherit;outline:none;transition:border .15s}
+input:focus,textarea:focus,select:focus{border-color:var(--g);box-shadow:0 0 0 3px rgba(37,211,102,.1)}
+textarea{resize:vertical;min-height:72px}.form-group{margin-bottom:14px}
+.flow-card{background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:8px;cursor:pointer;transition:all .15s}
+.flow-card:hover{border-color:var(--g);box-shadow:0 0 0 3px rgba(37,211,102,.08)}
+.flow-name{font-size:13px;font-weight:700}.flow-desc{font-size:12px;color:var(--muted);margin-top:4px}
+.chat-wrap{background:#e5ddd5;border-radius:10px;padding:14px;min-height:180px;display:flex;flex-direction:column;gap:8px}
+.bubble{padding:8px 12px;border-radius:10px;font-size:12px;max-width:82%;line-height:1.5}
+.bout{background:var(--gs);color:#065f46;border-radius:10px 10px 2px 10px;align-self:flex-end}
+.bin{background:#fff;color:var(--text);border-radius:10px 10px 10px 2px;align-self:flex-start}
+.kw-tag{display:inline-flex;align-items:center;gap:5px;background:var(--light);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:12px;margin:3px}
+.kw-tag .rm{cursor:pointer;color:var(--muted)}.kw-tag .rm:hover{color:var(--red)}
+.tags-box{display:flex;flex-wrap:wrap;min-height:38px;border:1.5px solid var(--border);border-radius:8px;padding:4px 8px;background:#fff;margin-bottom:8px;align-items:center;gap:2px}
+.stat-row{display:flex;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;gap:10px}
+.stat-row:last-child{border-bottom:none}
+.stat-bar{flex:1;height:5px;background:var(--light);border-radius:3px;overflow:hidden}
+.stat-fill{height:100%;background:var(--g);border-radius:3px}
+.conv-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:opacity .15s}
+.conv-item:hover{opacity:.75}.conv-item:last-child{border-bottom:none}
+.avatar{width:38px;height:38px;border-radius:50%;background:var(--gs);color:#065f46;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.conv-name{font-size:13px;font-weight:600}.conv-last{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sw-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.sw-row:last-child{border-bottom:none}.sw-label{font-size:13px;font-weight:500}.sw-sub{font-size:11px;color:var(--muted)}
+.toggle{position:relative;display:inline-block;width:38px;height:22px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.sl{position:absolute;inset:0;background:var(--border);border-radius:22px;cursor:pointer;transition:.2s}
+.sl:before{position:absolute;content:'';height:16px;width:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+input:checked+.sl{background:var(--g)}
+input:checked+.sl:before{transform:translateX(16px)}
+.step-row{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.step-row:last-child{border-bottom:none}
+.step-num{width:22px;height:22px;border-radius:50%;background:var(--g);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step-title{font-size:13px;font-weight:500}.step-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.tab-row{display:flex;gap:2px;background:var(--light);border-radius:8px;padding:3px;margin-bottom:16px}
+.tab{flex:1;text-align:center;padding:6px 8px;font-size:12px;font-weight:500;border-radius:6px;cursor:pointer;color:var(--muted);user-select:none;transition:all .15s}
+.tab.active{background:#fff;color:var(--text);border:1px solid var(--border)}
+.conn-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.conn-item:last-child{border-bottom:none}
+.conn-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.conn-name{font-size:13px;font-weight:700}.conn-desc{font-size:11px;color:var(--muted)}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:200;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:16px;padding:24px;width:480px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,.18);border:1px solid var(--border);max-height:90vh;overflow-y:auto}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:18px}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
+.cta-item{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)}
+.cta-item:last-child{border-bottom:none}
+.cta-icon{width:34px;height:34px;border-radius:8px;background:var(--gs);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.cta-title{font-size:13px;font-weight:600}.cta-sub{font-size:11px;color:var(--muted)}
+.admin-table{width:100%;border-collapse:collapse}
+.admin-table th{text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;padding:8px 12px;border-bottom:2px solid var(--border);background:var(--light)}
+.admin-table td{padding:12px 12px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+.admin-table tr:hover td{background:var(--light)}
+.action-btns{display:flex;gap:6px}
+.act-btn{padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:all .15s}
+.act-approve{background:var(--gs);color:#065f46}.act-approve:hover{background:#a7f3d0}
+.act-reject{background:var(--redg);color:#991b1b}.act-reject:hover{background:#fecaca}
+.plan-box{background:var(--gl);border-radius:10px;padding:14px;text-align:center;margin-bottom:14px}
+.plan-name-d{font-size:11px;color:#065f46;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.plan-price-d{font-size:26px;font-weight:800;color:#065f46}
+.alert{position:fixed;bottom:24px;right:24px;background:#1f2937;color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;font-weight:500;z-index:999;display:none;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.alert.show{display:flex}
 </style>
 </head>
 <body>
-<div class="app">
 
-  <!-- SIDEBAR -->
+<!-- LOGIN -->
+<div class="screen active" id="s-login">
+<div class="auth-wrap">
+  <div class="auth-left">
+    <div class="auth-brand"><div class="auth-brand-icon">W</div><div class="auth-brand-name">ZapBot</div></div>
+    <div class="auth-headline">Automatize seu WhatsApp com inteligência</div>
+    <div class="auth-sub">Crie bots personalizados, capture leads e atenda clientes 24h — sem código.</div>
+    <div class="auth-feature"><div class="auth-feature-icon">⚡</div><div class="auth-feature-text">Fluxos visuais, sem programação</div></div>
+    <div class="auth-feature"><div class="auth-feature-icon">🎯</div><div class="auth-feature-text">Palavras-chave e CTAs automáticas</div></div>
+    <div class="auth-feature"><div class="auth-feature-icon">📊</div><div class="auth-feature-text">Dashboard com métricas em tempo real</div></div>
+    <div class="auth-feature"><div class="auth-feature-icon">🔒</div><div class="auth-feature-text">Dados seguros, servidores no Brasil</div></div>
+  </div>
+  <div class="auth-right">
+    <div class="auth-form-wrap">
+      <div class="auth-title">Bem-vindo de volta 👋</div>
+      <div class="auth-desc">Acesse sua conta para gerenciar seus bots</div>
+      <div class="err-msg" id="login-err">Email ou senha incorretos.</div>
+      <div class="ok-msg" id="login-hint" style="display:block">Demo: <strong>admin@zapbot.com</strong> / <strong>admin123</strong> (admin) &nbsp;|&nbsp; qualquer email + senha 4+ chars (usuário)</div>
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" id="login-email" placeholder="seu@email.com"></div>
+      <div class="form-group"><label class="form-label">Senha</label><input class="form-input" type="password" id="login-pass" placeholder="••••••••"></div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:20px"><span class="auth-link" style="font-size:13px">Esqueci minha senha</span></div>
+      <button class="btn-full btn-green" onclick="doLogin()">Entrar na plataforma</button>
+      <div class="auth-divider">ou</div>
+      <button class="btn-full btn-outline" onclick="showScreen('s-register')">Criar nova conta</button>
+      <div class="auth-footer">Conheça nossos <span class="auth-link" onclick="showScreen('s-pricing')">planos e preços →</span></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- REGISTER -->
+<div class="screen" id="s-register">
+<div class="auth-wrap">
+  <div class="auth-left">
+    <div class="auth-brand"><div class="auth-brand-icon">W</div><div class="auth-brand-name">ZapBot</div></div>
+    <div class="auth-headline">Comece grátis por 14 dias</div>
+    <div class="auth-sub">Sem cartão de crédito. Cancele quando quiser. Suporte em português.</div>
+    <div class="auth-feature"><div class="auth-feature-icon">🚀</div><div class="auth-feature-text">Configure em menos de 15 minutos</div></div>
+    <div class="auth-feature"><div class="auth-feature-icon">💬</div><div class="auth-feature-text">1.000 conversas gratuitas no trial</div></div>
+    <div class="auth-feature"><div class="auth-feature-icon">🤝</div><div class="auth-feature-text">Suporte dedicado via WhatsApp</div></div>
+  </div>
+  <div class="auth-right" style="width:520px">
+    <div class="auth-form-wrap" style="max-width:400px">
+      <div class="auth-title">Criar conta grátis</div>
+      <div class="auth-desc">Preencha os dados para solicitar seu acesso</div>
+      <div class="err-msg" id="reg-err">Preencha todos os campos.</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Nome</label><input class="form-input" type="text" id="reg-nome" placeholder="Seu nome"></div>
+        <div class="form-group"><label class="form-label">Sobrenome</label><input class="form-input" type="text" id="reg-sobrenome" placeholder="Sobrenome"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" id="reg-email" placeholder="empresa@email.com"></div>
+      <div class="form-group"><label class="form-label">WhatsApp</label><input class="form-input" type="tel" id="reg-tel" placeholder="+55 11 99999-0000"></div>
+      <div class="form-group"><label class="form-label">Nome da empresa</label><input class="form-input" type="text" id="reg-empresa" placeholder="Nome da sua empresa"></div>
+      <div class="form-group"><label class="form-label">Segmento</label>
+        <select class="form-input" id="reg-segmento">
+          <option value="">Selecione o segmento</option>
+          <option>E-commerce</option><option>Serviços</option><option>Saúde</option>
+          <option>Educação</option><option>Imobiliária</option><option>Alimentação</option>
+          <option>Financeiro</option><option>Outros</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Escolha seu plano</label>
+        <div class="plan-select-grid">
+          <div class="plan-opt" onclick="selPlan(this,'starter')"><div class="plan-opt-name">Starter</div><div class="plan-opt-price"><strong>R$79</strong>/mês</div></div>
+          <div class="plan-opt selected" onclick="selPlan(this,'pro')"><div class="plan-opt-name">Pro ⭐</div><div class="plan-opt-price"><strong>R$149</strong>/mês</div></div>
+          <div class="plan-opt" onclick="selPlan(this,'enterprise')"><div class="plan-opt-name">Enterprise</div><div class="plan-opt-price"><strong>Sob</strong> consulta</div></div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Senha</label><input class="form-input" type="password" id="reg-pass" placeholder="Min. 6 chars"></div>
+        <div class="form-group"><label class="form-label">Confirmar</label><input class="form-input" type="password" id="reg-pass2" placeholder="Repita"></div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:18px;line-height:1.5">Ao criar a conta, você concorda com os <span class="auth-link">Termos de Uso</span> e a <span class="auth-link">Política de Privacidade</span>.</div>
+      <button class="btn-full btn-green" onclick="doRegister()">Solicitar acesso grátis</button>
+      <div class="auth-footer">Já tem conta? <span class="auth-link" onclick="showScreen('s-login')">Entrar →</span></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- PENDING -->
+<div class="screen" id="s-pending">
+<div class="pending-wrap">
+  <div class="pending-card">
+    <div class="pending-icon">⏳</div>
+    <div class="pending-title">Cadastro em análise!</div>
+    <div class="pending-desc">Sua solicitação foi recebida. Nossa equipe vai revisar e liberar o acesso em até <strong>24 horas úteis</strong>.</div>
+    <div class="pending-steps">
+      <div class="pending-step"><div class="pending-step-num">✓</div><span>Cadastro enviado com sucesso</span></div>
+      <div class="pending-step"><div class="pending-step-num" style="background:var(--yellow)">2</div><span>Análise pelo administrador (até 24h)</span></div>
+      <div class="pending-step"><div class="pending-step-num" style="background:var(--border);color:var(--muted)">3</div><span>Email de confirmação de acesso</span></div>
+      <div class="pending-step"><div class="pending-step-num" style="background:var(--border);color:var(--muted)">4</div><span>Acesso liberado à plataforma</span></div>
+    </div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Você receberá um email em <strong id="pending-email">seu@email.com</strong> quando o acesso for liberado.</div>
+    <button class="btn-full btn-outline" onclick="showScreen('s-login')" style="margin-bottom:10px">Voltar para o login</button>
+    <div style="font-size:12px;color:var(--muted);text-align:center">Dúvidas? <span class="auth-link">Fale conosco no WhatsApp</span></div>
+  </div>
+</div>
+</div>
+
+<!-- PRICING -->
+<div class="screen" id="s-pricing">
+<div class="pricing-wrap">
+  <div class="pricing-nav">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:32px;height:32px;background:var(--g);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:700">W</div>
+      <span style="font-size:16px;font-weight:700">ZapBot</span>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn" onclick="showScreen('s-login')">Entrar</button>
+      <button class="btn btn-primary" onclick="showScreen('s-register')">Criar conta grátis</button>
+    </div>
+  </div>
+  <div class="pricing-body">
+    <div class="pricing-header">
+      <div class="pricing-eyebrow">Planos e Preços</div>
+      <div class="pricing-title">Escolha o plano ideal<br>para o seu negócio</div>
+      <div class="pricing-sub">14 dias grátis. Sem cartão. Cancele quando quiser.</div>
+      <div class="toggle-row">
+        <span>Mensal</span>
+        <label class="toggle-pill"><input type="checkbox" id="billing-toggle" onchange="toggleBilling()"><span class="tp-sl"></span></label>
+        <span>Anual</span>
+        <span class="save-badge">Economize 20%</span>
+      </div>
+    </div>
+    <div class="plans-grid">
+      <div class="plan-card">
+        <div class="plan-name">Starter</div>
+        <div><span class="plan-price" id="price-starter">R$79</span><span class="plan-period">/mês</span></div>
+        <div class="plan-desc">Para pequenos negócios começando com automação</div>
+        <button class="plan-btn" onclick="showScreen('s-register')">Começar grátis</button>
+        <ul class="plan-features">
+          <li class="plan-feat">1 número de WhatsApp</li><li class="plan-feat">3.000 conversas/mês</li>
+          <li class="plan-feat">5 fluxos de bot</li><li class="plan-feat">Palavras-chave ilimitadas</li>
+          <li class="plan-feat">Painel de analytics</li><li class="plan-feat no">IA avançada (GPT)</li>
+          <li class="plan-feat no">API / Webhooks</li><li class="plan-feat no">Múltiplos usuários</li>
+        </ul>
+      </div>
+      <div class="plan-card popular">
+        <div class="popular-badge">⭐ Mais popular</div>
+        <div class="plan-name">Pro</div>
+        <div><span class="plan-price" id="price-pro">R$149</span><span class="plan-period">/mês</span></div>
+        <div class="plan-desc">Para empresas que querem automatizar o atendimento</div>
+        <button class="plan-btn" onclick="showScreen('s-register')">Começar grátis</button>
+        <ul class="plan-features">
+          <li class="plan-feat">5 números de WhatsApp</li><li class="plan-feat">10.000 conversas/mês</li>
+          <li class="plan-feat">Fluxos ilimitados</li><li class="plan-feat">Palavras-chave ilimitadas</li>
+          <li class="plan-feat">Analytics avançado</li><li class="plan-feat">IA avançada (GPT-4)</li>
+          <li class="plan-feat">API / Webhooks</li><li class="plan-feat no">Múltiplos usuários</li>
+        </ul>
+      </div>
+      <div class="plan-card">
+        <div class="plan-name">Enterprise</div>
+        <div><span class="plan-price" style="font-size:28px">Sob consulta</span></div>
+        <div class="plan-desc">Para grandes operações com necessidades específicas</div>
+        <button class="plan-btn" onclick="showScreen('s-register')">Falar com vendas</button>
+        <ul class="plan-features">
+          <li class="plan-feat">Números ilimitados</li><li class="plan-feat">Conversas ilimitadas</li>
+          <li class="plan-feat">IA dedicada</li><li class="plan-feat">API / Webhooks</li>
+          <li class="plan-feat">Múltiplos usuários</li><li class="plan-feat">SLA 99.9%</li>
+          <li class="plan-feat">Gerente dedicado</li><li class="plan-feat">Onboarding premium</li>
+        </ul>
+      </div>
+    </div>
+    <div class="faq-section">
+      <div class="faq-title">Perguntas frequentes</div>
+      <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q">Preciso de cartão de crédito para testar?<span class="faq-chevron">▾</span></div><div class="faq-a">Não! O trial de 14 dias é completamente gratuito, sem necessidade de cartão.</div></div>
+      <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q">Como funciona a aprovação de cadastro?<span class="faq-chevron">▾</span></div><div class="faq-a">Após o cadastro, nossa equipe analisa os dados em até 24 horas úteis e você recebe um email quando liberado.</div></div>
+      <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q">Posso mudar de plano depois?<span class="faq-chevron">▾</span></div><div class="faq-a">Sim! Faça upgrade ou downgrade a qualquer momento pelo painel.</div></div>
+      <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q">Tem suporte em português?<span class="faq-chevron">▾</span></div><div class="faq-a">Claro! Todo nosso suporte é em português, via chat, WhatsApp e email.</div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- APP -->
+<div class="screen" id="s-app">
+<div class="app-wrap">
   <div class="sidebar">
     <div class="logo">
       <div class="logo-icon">W</div>
-      <div>
-        <div class="logo-name">ZapBot</div>
-        <div class="logo-tag">Automação WhatsApp</div>
-      </div>
+      <div><div class="logo-name">ZapBot</div><div class="logo-plan" id="sidebar-plan">Plano Pro</div></div>
     </div>
     <nav>
       <div class="nav-section">Principal</div>
       <div class="nav-item active" onclick="go('dashboard',this)"><span class="nav-icon">📊</span>Dashboard</div>
-      <div class="nav-item" onclick="go('conversations',this)"><span class="nav-icon">💬</span>Conversas<span class="badge">12</span></div>
+      <div class="nav-item" onclick="go('conversations',this)"><span class="nav-icon">💬</span>Conversas<span class="nav-badge">12</span></div>
       <div class="nav-section">Automação</div>
       <div class="nav-item" onclick="go('flows',this)"><span class="nav-icon">⚡</span>Fluxos do Bot</div>
       <div class="nav-item" onclick="go('keywords',this)"><span class="nav-icon">🔑</span>Palavras-chave</div>
@@ -187,68 +395,57 @@
       <div class="nav-section">Configuração</div>
       <div class="nav-item" onclick="go('whatsapp',this)"><span class="nav-icon">📱</span>WhatsApp</div>
       <div class="nav-item" onclick="go('contexts',this)"><span class="nav-icon">🧠</span>Contextos</div>
+      <div class="nav-item admin-only" id="nav-admin" onclick="go('admin',this)" style="display:none"><span class="nav-icon">👑</span>Admin<span class="nav-badge yellow" id="admin-badge">3</span></div>
       <div class="nav-item" onclick="go('settings',this)"><span class="nav-icon">⚙️</span>Configurações</div>
     </nav>
     <div class="sidebar-footer">
-      <div class="wa-conn">
-        <div class="dot-g"></div>
-        <div class="wa-info"><strong>+55 11 99999-0001</strong>Conectado</div>
-        <span style="margin-left:auto;font-size:10px;color:#065f46">●</span>
+      <div class="user-pill">
+        <div class="user-av" id="user-av">ZB</div>
+        <div><div class="user-name" id="user-name">Usuário</div><div class="user-role" id="user-role">Pro</div></div>
+        <button class="logout-btn" onclick="doLogout()">Sair</button>
       </div>
     </div>
   </div>
-
-  <!-- MAIN -->
   <div class="main">
     <div class="topbar">
       <div class="page-title" id="topbar-title">Dashboard</div>
       <div class="topbar-right">
-        <button class="btn" onclick="go('whatsapp',document.querySelector('[onclick*=whatsapp]'))">+ Adicionar número</button>
+        <button class="btn" onclick="go('whatsapp',null)">+ Número</button>
         <button class="btn btn-primary" onclick="document.getElementById('mNewFlow').classList.add('open')">+ Novo fluxo</button>
       </div>
     </div>
-
     <div class="content">
 
       <!-- DASHBOARD -->
       <div class="page active" id="page-dashboard">
         <div class="grid-4 g-gap">
-          <div class="metric"><div class="metric-label">Conversas hoje</div><div class="metric-value">247</div><div class="metric-delta">↑ 18% vs ontem</div></div>
-          <div class="metric"><div class="metric-label">Taxa de resposta</div><div class="metric-value">98.4%</div><div class="metric-delta">↑ 2.1% esta semana</div></div>
-          <div class="metric"><div class="metric-label">Tempo médio</div><div class="metric-value">1.2s</div><div class="metric-delta">Bot respondendo rápido</div></div>
-          <div class="metric"><div class="metric-label">Leads capturados</div><div class="metric-value">64</div><div class="metric-delta">↑ 31% este mês</div></div>
+          <div class="metric"><div class="metric-label">Conversas hoje</div><div class="metric-val">247</div><div class="metric-delta">↑ 18% vs ontem</div></div>
+          <div class="metric"><div class="metric-label">Taxa de resposta</div><div class="metric-val">98.4%</div><div class="metric-delta">↑ 2.1% esta semana</div></div>
+          <div class="metric"><div class="metric-label">Tempo médio</div><div class="metric-val">1.2s</div><div class="metric-delta">Respondendo rápido</div></div>
+          <div class="metric"><div class="metric-label">Leads capturados</div><div class="metric-val">64</div><div class="metric-delta">↑ 31% este mês</div></div>
         </div>
         <div class="grid-2 g-gap">
           <div class="card">
-            <div class="card-header"><span class="card-title">Fluxos ativos</span><button class="btn" style="font-size:12px;padding:4px 10px" onclick="go('flows',document.querySelector('[onclick*=flows]'))">Ver todos</button></div>
-            <div class="flow-card" onclick="go('flows',document.querySelector('[onclick*=flows]'))">
-              <div style="display:flex;align-items:center;justify-content:space-between"><span class="flow-name">Boas-vindas & Triagem</span><span class="pill pill-green">Ativo</span></div>
-              <div class="flow-desc">Recepciona novos clientes e direciona para o setor correto</div>
-            </div>
-            <div class="flow-card" onclick="go('flows',document.querySelector('[onclick*=flows]'))">
-              <div style="display:flex;align-items:center;justify-content:space-between"><span class="flow-name">Suporte Técnico</span><span class="pill pill-green">Ativo</span></div>
-              <div class="flow-desc">Resolve dúvidas comuns e abre chamados automaticamente</div>
-            </div>
-            <div class="flow-card" onclick="go('flows',document.querySelector('[onclick*=flows]'))">
-              <div style="display:flex;align-items:center;justify-content:space-between"><span class="flow-name">Recuperação de Vendas</span><span class="pill pill-yellow">Pausado</span></div>
-              <div class="flow-desc">Reengaja clientes que abandonaram o carrinho</div>
-            </div>
+            <div class="card-header"><span class="card-title">Fluxos ativos</span><button class="btn" style="font-size:12px;padding:4px 10px" onclick="go('flows',null)">Ver todos</button></div>
+            <div class="flow-card"><div style="display:flex;align-items:center;justify-content:space-between"><span class="flow-name">Boas-vindas & Triagem</span><span class="pill pill-g">Ativo</span></div><div class="flow-desc">Recepciona novos clientes e direciona para o setor correto</div></div>
+            <div class="flow-card"><div style="display:flex;align-items:center;justify-content:space-between"><span class="flow-name">Suporte Técnico</span><span class="pill pill-g">Ativo</span></div><div class="flow-desc">Resolve dúvidas comuns e abre chamados automaticamente</div></div>
+            <div class="flow-card"><div style="display:flex;align-items:center;justify-content:space-between"><span class="flow-name">Recuperação de Vendas</span><span class="pill pill-y">Pausado</span></div><div class="flow-desc">Reengaja clientes que abandonaram o carrinho</div></div>
           </div>
           <div class="card">
             <div class="card-header"><span class="card-title">Conversas recentes</span></div>
-            <div class="conv-item"><div class="avatar">MF</div><div style="flex:1;min-width:0"><div class="conv-name">Maria Fernanda</div><div class="conv-last">Quero saber mais sobre os planos...</div></div><div class="conv-time">agora<br><span class="pill pill-green" style="font-size:10px">Bot</span></div></div>
-            <div class="conv-item"><div class="avatar">JC</div><div style="flex:1;min-width:0"><div class="conv-name">João Carlos</div><div class="conv-last">Já recebi o boleto, obrigado!</div></div><div class="conv-time">3min</div></div>
-            <div class="conv-item"><div class="avatar">AM</div><div style="flex:1;min-width:0"><div class="conv-name">Ana Martins</div><div class="conv-last">Preciso cancelar minha assinatura</div></div><div class="conv-time">12min<br><span class="pill pill-yellow" style="font-size:10px">Humano</span></div></div>
-            <div class="conv-item"><div class="avatar">RL</div><div style="flex:1;min-width:0"><div class="conv-name">Rafael Lima</div><div class="conv-last">Quando chega meu pedido?</div></div><div class="conv-time">28min</div></div>
+            <div class="conv-item"><div class="avatar">MF</div><div style="flex:1;min-width:0"><div class="conv-name">Maria Fernanda</div><div class="conv-last">Quero saber mais sobre os planos...</div></div><div style="font-size:11px;color:var(--muted);flex-shrink:0;text-align:right">agora<br><span class="pill pill-g" style="font-size:10px">Bot</span></div></div>
+            <div class="conv-item"><div class="avatar">JC</div><div style="flex:1;min-width:0"><div class="conv-name">João Carlos</div><div class="conv-last">Já recebi o boleto, obrigado!</div></div><div style="font-size:11px;color:var(--muted);flex-shrink:0">3min</div></div>
+            <div class="conv-item"><div class="avatar">AM</div><div style="flex:1;min-width:0"><div class="conv-name">Ana Martins</div><div class="conv-last">Preciso cancelar minha assinatura</div></div><div style="font-size:11px;color:var(--muted);flex-shrink:0;text-align:right">12min<br><span class="pill pill-y" style="font-size:10px">Humano</span></div></div>
+            <div class="conv-item"><div class="avatar">RL</div><div style="flex:1;min-width:0"><div class="conv-name">Rafael Lima</div><div class="conv-last">Quando chega meu pedido?</div></div><div style="font-size:11px;color:var(--muted);flex-shrink:0">28min</div></div>
           </div>
         </div>
         <div class="card">
           <div class="card-header"><span class="card-title">Palavras-chave mais acionadas hoje</span></div>
-          <div class="stat-row"><span style="min-width:140px">preço / valor</span><div class="stat-bar"><div class="stat-fill" style="width:82%"></div></div><span>82%</span></div>
-          <div class="stat-row"><span style="min-width:140px">entrega / prazo</span><div class="stat-bar"><div class="stat-fill" style="width:64%"></div></div><span>64%</span></div>
-          <div class="stat-row"><span style="min-width:140px">cancelar</span><div class="stat-bar"><div class="stat-fill" style="width:41%"></div></div><span>41%</span></div>
-          <div class="stat-row"><span style="min-width:140px">suporte / problema</span><div class="stat-bar"><div class="stat-fill" style="width:37%"></div></div><span>37%</span></div>
-          <div class="stat-row"><span style="min-width:140px">desconto / cupom</span><div class="stat-bar"><div class="stat-fill" style="width:29%"></div></div><span>29%</span></div>
+          <div class="stat-row"><span style="min-width:150px">preço / valor</span><div class="stat-bar"><div class="stat-fill" style="width:82%"></div></div><span>82%</span></div>
+          <div class="stat-row"><span style="min-width:150px">entrega / prazo</span><div class="stat-bar"><div class="stat-fill" style="width:64%"></div></div><span>64%</span></div>
+          <div class="stat-row"><span style="min-width:150px">cancelar</span><div class="stat-bar"><div class="stat-fill" style="width:41%"></div></div><span>41%</span></div>
+          <div class="stat-row"><span style="min-width:150px">suporte / problema</span><div class="stat-bar"><div class="stat-fill" style="width:37%"></div></div><span>37%</span></div>
+          <div class="stat-row"><span style="min-width:150px">desconto / cupom</span><div class="stat-bar"><div class="stat-fill" style="width:29%"></div></div><span>29%</span></div>
         </div>
       </div>
 
@@ -256,35 +453,18 @@
       <div class="page" id="page-flows">
         <div class="grid-2">
           <div>
-            <div class="flow-card">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span class="flow-name">Boas-vindas & Triagem</span><span class="pill pill-green">Ativo</span></div>
-              <div class="flow-desc" style="margin-bottom:10px">Recepciona novos clientes e direciona para o setor correto</div>
-              <div style="display:flex;gap:6px"><button class="btn" style="font-size:12px;padding:4px 10px" onclick="document.getElementById('mEditFlow').classList.add('open')">✏️ Editar</button><button class="btn" style="font-size:12px;padding:4px 10px">⏸ Pausar</button></div>
-            </div>
-            <div class="flow-card">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span class="flow-name">Suporte Técnico</span><span class="pill pill-green">Ativo</span></div>
-              <div class="flow-desc" style="margin-bottom:10px">Resolve dúvidas comuns e abre chamados automaticamente</div>
-              <div style="display:flex;gap:6px"><button class="btn" style="font-size:12px;padding:4px 10px" onclick="document.getElementById('mEditFlow').classList.add('open')">✏️ Editar</button><button class="btn" style="font-size:12px;padding:4px 10px">⏸ Pausar</button></div>
-            </div>
-            <div class="flow-card">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span class="flow-name">Recuperação de Vendas</span><span class="pill pill-yellow">Pausado</span></div>
-              <div class="flow-desc" style="margin-bottom:10px">Reengaja clientes que abandonaram o carrinho</div>
-              <div style="display:flex;gap:6px"><button class="btn" style="font-size:12px;padding:4px 10px" onclick="document.getElementById('mEditFlow').classList.add('open')">✏️ Editar</button><button class="btn btn-primary" style="font-size:12px;padding:4px 10px">▶ Ativar</button></div>
-            </div>
-            <div class="flow-card">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span class="flow-name">Pós-venda & NPS</span><span class="pill pill-gray">Rascunho</span></div>
-              <div class="flow-desc" style="margin-bottom:10px">Coleta NPS e oferece upsell após compra confirmada</div>
-              <div style="display:flex;gap:6px"><button class="btn" style="font-size:12px;padding:4px 10px" onclick="document.getElementById('mEditFlow').classList.add('open')">✏️ Editar</button><button class="btn btn-primary" style="font-size:12px;padding:4px 10px">▶ Publicar</button></div>
-            </div>
+            <div class="flow-card"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span class="flow-name">Boas-vindas & Triagem</span><span class="pill pill-g">Ativo</span></div><div class="flow-desc" style="margin-bottom:10px">Recepciona novos clientes e direciona para o setor correto</div><div style="display:flex;gap:6px"><button class="btn" style="font-size:12px;padding:4px 10px" onclick="document.getElementById('mEditFlow').classList.add('open')">✏️ Editar</button><button class="btn" style="font-size:12px;padding:4px 10px">⏸ Pausar</button></div></div>
+            <div class="flow-card"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span class="flow-name">Suporte Técnico</span><span class="pill pill-g">Ativo</span></div><div class="flow-desc" style="margin-bottom:10px">Resolve dúvidas comuns automaticamente</div><div style="display:flex;gap:6px"><button class="btn" style="font-size:12px;padding:4px 10px" onclick="document.getElementById('mEditFlow').classList.add('open')">✏️ Editar</button><button class="btn" style="font-size:12px;padding:4px 10px">⏸ Pausar</button></div></div>
+            <div class="flow-card"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span class="flow-name">Recuperação de Vendas</span><span class="pill pill-y">Pausado</span></div><div class="flow-desc" style="margin-bottom:10px">Reengaja clientes que abandonaram o carrinho</div><div style="display:flex;gap:6px"><button class="btn" style="font-size:12px;padding:4px 10px" onclick="document.getElementById('mEditFlow').classList.add('open')">✏️ Editar</button><button class="btn btn-primary" style="font-size:12px;padding:4px 10px">▶ Ativar</button></div></div>
           </div>
           <div class="card">
             <div class="card-header"><span class="card-title">Prévia — Boas-vindas</span></div>
             <div class="chat-wrap">
-              <div class="bubble bubble-in">Olá! 👋</div>
-              <div class="bubble bubble-out">Olá! Sou a assistente virtual da *ZapBot*. Como posso te ajudar hoje? 😊</div>
-              <div class="bubble bubble-out">1️⃣ Conhecer os planos<br>2️⃣ Já sou cliente<br>3️⃣ Falar com humano</div>
-              <div class="bubble bubble-in">1</div>
-              <div class="bubble bubble-out">Ótimo! Temos planos a partir de R$79/mês. Posso te mostrar os detalhes? 🚀</div>
+              <div class="bubble bin">Olá! 👋</div>
+              <div class="bubble bout">Olá! Sou a assistente virtual da ZapBot. Como posso ajudar? 😊</div>
+              <div class="bubble bout">1️⃣ Conhecer planos · 2️⃣ Já sou cliente · 3️⃣ Falar com humano</div>
+              <div class="bubble bin">1</div>
+              <div class="bubble bout">Ótimo! Planos a partir de R$79/mês. Posso detalhar? 🚀</div>
             </div>
             <div style="margin-top:14px">
               <div class="step-row"><div class="step-num">1</div><div><div class="step-title">Mensagem de boas-vindas</div><div class="step-sub">Enviada ao primeiro contato</div></div></div>
@@ -298,44 +478,28 @@
       <!-- KEYWORDS -->
       <div class="page" id="page-keywords">
         <div class="grid-2">
-          <div class="card">
-            <div class="card-header"><span class="card-title">Grupos de palavras-chave</span><button class="btn" style="font-size:12px;padding:4px 10px" onclick="document.getElementById('mNewKw').classList.add('open')">+ Novo grupo</button></div>
-            <div id="kw-list"></div>
-          </div>
-          <div class="card">
-            <div class="card-header"><span class="card-title">Como funcionam</span></div>
-            <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:14px">Quando um cliente enviar uma mensagem contendo qualquer palavra do grupo, o bot aciona automaticamente a resposta configurada.</div>
-            <div class="step-row"><div class="step-num">1</div><div><div class="step-title">Cliente envia mensagem</div><div class="step-sub">Ex: "qual o preço do plano?"</div></div></div>
-            <div class="step-row"><div class="step-num">2</div><div><div class="step-title">Bot detecta palavra-chave</div><div class="step-sub">Identifica "preço" no grupo Vendas</div></div></div>
-            <div class="step-row"><div class="step-num">3</div><div><div class="step-title">Resposta automática</div><div class="step-sub">Envia mensagem ou abre fluxo</div></div></div>
-          </div>
+          <div class="card"><div class="card-header"><span class="card-title">Grupos de palavras-chave</span><button class="btn" style="font-size:12px;padding:4px 10px" onclick="document.getElementById('mNewKw').classList.add('open')">+ Novo grupo</button></div><div id="kw-list"></div></div>
+          <div class="card"><div class="card-header"><span class="card-title">Como funcionam</span></div><div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:14px">Quando um cliente enviar uma mensagem com qualquer palavra do grupo, o bot aciona automaticamente a resposta configurada.</div><div class="step-row"><div class="step-num">1</div><div><div class="step-title">Cliente envia mensagem</div><div class="step-sub">Ex: "qual o preço do plano?"</div></div></div><div class="step-row"><div class="step-num">2</div><div><div class="step-title">Bot detecta palavra-chave</div><div class="step-sub">Identifica "preço" no grupo Vendas</div></div></div><div class="step-row"><div class="step-num">3</div><div><div class="step-title">Resposta automática</div><div class="step-sub">Envia mensagem ou abre fluxo</div></div></div></div>
         </div>
       </div>
 
-      <!-- CTAs -->
+      <!-- CTAS -->
       <div class="page" id="page-ctas">
         <div class="grid-2">
           <div class="card">
             <div class="card-header"><span class="card-title">Chamadas para ação</span><button class="btn" style="font-size:12px;padding:4px 10px" onclick="document.getElementById('mNewCta').classList.add('open')">+ Nova CTA</button></div>
-            <div class="cta-item"><div class="cta-icon">🛒</div><div style="flex:1"><div class="cta-title">Ver catálogo</div><div class="cta-sub">Aciona quando cliente pergunta sobre produtos</div></div><span class="pill pill-green">Ativo</span></div>
-            <div class="cta-item"><div class="cta-icon">📅</div><div style="flex:1"><div class="cta-title">Agendar demonstração</div><div class="cta-sub">Envia link do Calendly automaticamente</div></div><span class="pill pill-green">Ativo</span></div>
-            <div class="cta-item"><div class="cta-icon">💰</div><div style="flex:1"><div class="cta-title">Oferecer desconto</div><div class="cta-sub">Envia cupom em intenção de saída</div></div><span class="pill pill-yellow">Pausado</span></div>
-            <div class="cta-item"><div class="cta-icon">🤝</div><div style="flex:1"><div class="cta-title">Transferir para humano</div><div class="cta-sub">Quando detecta frustração na conversa</div></div><span class="pill pill-green">Ativo</span></div>
-            <div class="cta-item"><div class="cta-icon">⭐</div><div style="flex:1"><div class="cta-title">Pedir avaliação NPS</div><div class="cta-sub">Após resolução do suporte</div></div><span class="pill pill-green">Ativo</span></div>
+            <div class="cta-item"><div class="cta-icon">🛒</div><div style="flex:1"><div class="cta-title">Ver catálogo</div><div class="cta-sub">Aciona quando cliente pergunta sobre produtos</div></div><span class="pill pill-g">Ativo</span></div>
+            <div class="cta-item"><div class="cta-icon">📅</div><div style="flex:1"><div class="cta-title">Agendar demonstração</div><div class="cta-sub">Envia link do Calendly automaticamente</div></div><span class="pill pill-g">Ativo</span></div>
+            <div class="cta-item"><div class="cta-icon">💰</div><div style="flex:1"><div class="cta-title">Oferecer desconto</div><div class="cta-sub">Envia cupom em intenção de saída</div></div><span class="pill pill-y">Pausado</span></div>
+            <div class="cta-item"><div class="cta-icon">🤝</div><div style="flex:1"><div class="cta-title">Transferir para humano</div><div class="cta-sub">Quando detecta frustração na conversa</div></div><span class="pill pill-g">Ativo</span></div>
           </div>
           <div class="card">
-            <div class="card-header"><span class="card-title">Nova chamada para ação</span></div>
+            <div class="card-header"><span class="card-title">Nova CTA</span></div>
             <div class="form-group"><label>Nome da CTA</label><input type="text" placeholder="Ex: Oferecer frete grátis"></div>
-            <div class="form-group"><label>Palavras que ativam</label>
-              <div class="tags-box" id="cta-tags-box">
-                <span class="kw-tag">frete<span class="rm" onclick="this.parentNode.remove()">×</span></span>
-                <span class="kw-tag">entrega<span class="rm" onclick="this.parentNode.remove()">×</span></span>
-              </div>
-              <input type="text" placeholder="Digite e pressione Enter" id="cta-tag-input" onkeydown="addTag(event,'cta-tags-box','cta-tag-input')">
-            </div>
-            <div class="form-group"><label>Mensagem</label><textarea placeholder="🎁 Aproveite nosso frete GRÁTIS para pedidos acima de R$150! Use o cupom FRETE150."></textarea></div>
-            <div class="form-group"><label>Ação ao acionar</label><select><option>Enviar mensagem</option><option>Enviar link</option><option>Abrir fluxo</option><option>Transferir para humano</option></select></div>
-            <button class="btn btn-primary" style="width:100%">Salvar CTA</button>
+            <div class="form-group"><label>Palavras que ativam</label><div class="tags-box" id="cta-tags-box"><span class="kw-tag">frete<span class="rm" onclick="this.parentNode.remove()">×</span></span></div><input type="text" placeholder="Digite e pressione Enter" id="cta-tag-input" onkeydown="addTag(event,'cta-tags-box','cta-tag-input')"></div>
+            <div class="form-group"><label>Mensagem</label><textarea placeholder="🎁 Frete GRÁTIS para pedidos acima de R$150!"></textarea></div>
+            <div class="form-group"><label>Ação</label><select><option>Enviar mensagem</option><option>Enviar link</option><option>Abrir fluxo</option><option>Transferir para humano</option></select></div>
+            <button class="btn btn-primary" style="width:100%" onclick="showAlert('CTA salva! ✓')">Salvar CTA</button>
           </div>
         </div>
       </div>
@@ -343,246 +507,228 @@
       <!-- WHATSAPP -->
       <div class="page" id="page-whatsapp">
         <div class="grid-2">
-          <div class="card">
-            <div class="card-header"><span class="card-title">Números conectados</span><button class="btn" style="font-size:12px;padding:4px 10px" onclick="document.getElementById('mAddNum').classList.add('open')">+ Adicionar</button></div>
-            <div class="conn-item">
-              <div class="conn-icon" style="background:var(--gs)">📱</div>
-              <div style="flex:1"><div class="conn-name">+55 11 99999-0001</div><div class="conn-desc">Principal • Fluxo: Boas-vindas • 247 msgs hoje</div></div>
-              <span class="pill pill-green">Ativo</span>
-            </div>
-            <div class="conn-item">
-              <div class="conn-icon" style="background:#e0f2fe">📱</div>
-              <div style="flex:1"><div class="conn-name">+55 21 98888-0002</div><div class="conn-desc">Suporte • Fluxo: Suporte Técnico • 89 msgs hoje</div></div>
-              <span class="pill pill-green">Ativo</span>
-            </div>
-            <div class="conn-item">
-              <div class="conn-icon" style="background:var(--light)">📱</div>
-              <div style="flex:1"><div class="conn-name">+55 31 97777-0003</div><div class="conn-desc">Vendas • Fluxo: Recuperação • pausado</div></div>
-              <span class="pill pill-yellow">Pausado</span>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-header"><span class="card-title">Configurar número</span></div>
-            <div class="form-group"><label>Número WhatsApp</label><input type="tel" value="+55 11 99999-0001"></div>
-            <div class="form-group"><label>Nome de exibição do bot</label><input type="text" value="Assistente ZapBot"></div>
-            <div class="form-group"><label>Foto de perfil</label>
-              <div style="display:flex;align-items:center;gap:10px">
-                <div style="width:46px;height:46px;border-radius:50%;background:var(--gs);display:flex;align-items:center;justify-content:center;font-size:22px">🤖</div>
-                <button class="btn" style="font-size:12px;padding:5px 12px">Trocar imagem</button>
-              </div>
-            </div>
-            <div class="form-group"><label>Fluxo padrão</label><select><option>Boas-vindas & Triagem</option><option>Suporte Técnico</option><option>Recuperação de Vendas</option></select></div>
-            <div class="form-group"><label>Horário de atendimento</label>
-              <div style="display:flex;gap:8px;align-items:center">
-                <input type="text" value="08:00" style="width:80px">
-                <span style="color:var(--muted)">às</span>
-                <input type="text" value="22:00" style="width:80px">
-              </div>
-            </div>
-            <div class="form-group"><label>Mensagem fora do horário</label><textarea style="min-height:52px">Olá! Nosso atendimento funciona de seg a sex, das 8h às 22h. Deixe sua mensagem e retornaremos em breve! 🕐</textarea></div>
-            <button class="btn btn-primary">Salvar configurações</button>
-          </div>
+          <div class="card"><div class="card-header"><span class="card-title">Números conectados</span><button class="btn" style="font-size:12px;padding:4px 10px" onclick="document.getElementById('mAddNum').classList.add('open')">+ Adicionar</button></div><div class="conn-item"><div class="conn-icon" style="background:var(--gs)">📱</div><div style="flex:1"><div class="conn-name">+55 11 99999-0001</div><div class="conn-desc">Principal • 247 msgs hoje</div></div><span class="pill pill-g">Ativo</span></div><div class="conn-item"><div class="conn-icon" style="background:#eff6ff">📱</div><div style="flex:1"><div class="conn-name">+55 21 98888-0002</div><div class="conn-desc">Suporte • 89 msgs hoje</div></div><span class="pill pill-g">Ativo</span></div></div>
+          <div class="card"><div class="card-header"><span class="card-title">Configurar número</span></div><div class="form-group"><label>Número WhatsApp</label><input type="tel" value="+55 11 99999-0001"></div><div class="form-group"><label>Nome de exibição</label><input type="text" value="Assistente ZapBot"></div><div class="form-group"><label>Fluxo padrão</label><select><option>Boas-vindas & Triagem</option><option>Suporte Técnico</option></select></div><div class="form-group"><label>Horário de atendimento</label><div style="display:flex;gap:8px;align-items:center"><input type="text" value="08:00" style="width:80px"><span style="color:var(--muted)">às</span><input type="text" value="22:00" style="width:80px"></div></div><div class="form-group"><label>Mensagem fora do horário</label><textarea style="min-height:52px">Nosso atendimento funciona de seg a sex, 8h–22h. Retornaremos em breve! 🕐</textarea></div><button class="btn btn-primary" onclick="showAlert('Configurações salvas! ✓')">Salvar</button></div>
         </div>
       </div>
 
       <!-- CONTEXTS -->
       <div class="page" id="page-contexts">
         <div class="grid-2">
-          <div class="card">
-            <div class="card-header"><span class="card-title">Personalidade do bot</span></div>
-            <div class="form-group"><label>Sobre sua empresa</label><textarea style="min-height:80px">A ZapBot é uma plataforma SaaS de automação de WhatsApp para empresas. Fundada em 2023, atende mais de 500 clientes em todo o Brasil.</textarea></div>
-            <div class="form-group"><label>Tom de voz</label><select><option>Amigável e descontraído</option><option>Profissional e formal</option><option>Técnico e objetivo</option><option>Entusiasmado e energético</option></select></div>
-            <div class="form-group"><label>Idioma principal</label><select><option>Português (Brasil)</option><option>Inglês</option><option>Espanhol</option></select></div>
-            <div class="form-group"><label>Instruções especiais</label><textarea style="min-height:72px">Sempre se apresentar como "Assistente ZapBot". Nunca mencionar concorrentes. Ao detectar reclamação grave, transferir para humano.</textarea></div>
-            <div class="form-group"><label>O bot nunca deve dizer</label><textarea style="min-height:48px">Não sei / Não posso ajudar / Não tenho essa informação</textarea></div>
-            <button class="btn btn-primary">Salvar contexto</button>
-          </div>
-          <div class="card">
-            <div class="card-header"><span class="card-title">FAQ automático</span><button class="btn" style="font-size:12px;padding:4px 10px">+ Adicionar</button></div>
-            <div style="font-size:12px;color:var(--muted);margin-bottom:12px">O bot responde automaticamente às perguntas abaixo</div>
-            <div class="step-row"><div style="flex:1"><div class="step-title">Qual o horário de atendimento?</div><div class="step-sub">Seg a Sex 8h–22h, Sáb 9h–18h</div></div><button class="btn" style="font-size:11px;padding:3px 8px">✏️</button></div>
-            <div class="step-row"><div style="flex:1"><div class="step-title">Como cancelar minha assinatura?</div><div class="step-sub">Acesse Conta > Cancelar plano ou fale com suporte</div></div><button class="btn" style="font-size:11px;padding:3px 8px">✏️</button></div>
-            <div class="step-row"><div style="flex:1"><div class="step-title">Quais formas de pagamento?</div><div class="step-sub">Cartão de crédito, boleto e PIX</div></div><button class="btn" style="font-size:11px;padding:3px 8px">✏️</button></div>
-            <div class="step-row"><div style="flex:1"><div class="step-title">Tem período de teste grátis?</div><div class="step-sub">Sim! 14 dias sem cartão de crédito</div></div><button class="btn" style="font-size:11px;padding:3px 8px">✏️</button></div>
-          </div>
+          <div class="card"><div class="card-header"><span class="card-title">Personalidade do bot</span></div><div class="form-group"><label>Sobre sua empresa</label><textarea style="min-height:80px">A ZapBot é uma plataforma SaaS de automação WhatsApp. Atende mais de 500 clientes no Brasil.</textarea></div><div class="form-group"><label>Tom de voz</label><select><option>Amigável e descontraído</option><option>Profissional e formal</option><option>Técnico e objetivo</option></select></div><div class="form-group"><label>Idioma</label><select><option>Português (Brasil)</option><option>Inglês</option></select></div><div class="form-group"><label>Instruções especiais</label><textarea style="min-height:72px">Sempre se apresentar como "Assistente ZapBot". Nunca mencionar concorrentes.</textarea></div><button class="btn btn-primary" onclick="showAlert('Contexto salvo! ✓')">Salvar contexto</button></div>
+          <div class="card"><div class="card-header"><span class="card-title">FAQ automático</span><button class="btn" style="font-size:12px;padding:4px 10px">+ Adicionar</button></div><div class="step-row"><div style="flex:1"><div class="step-title">Qual o horário de atendimento?</div><div class="step-sub">Seg a Sex 8h–22h, Sáb 9h–18h</div></div><button class="btn" style="font-size:11px;padding:3px 8px">✏️</button></div><div class="step-row"><div style="flex:1"><div class="step-title">Como cancelar minha assinatura?</div><div class="step-sub">Acesse Conta > Cancelar plano</div></div><button class="btn" style="font-size:11px;padding:3px 8px">✏️</button></div><div class="step-row"><div style="flex:1"><div class="step-title">Quais formas de pagamento?</div><div class="step-sub">Cartão, boleto e PIX</div></div><button class="btn" style="font-size:11px;padding:3px 8px">✏️</button></div><div class="step-row"><div style="flex:1"><div class="step-title">Tem período de teste grátis?</div><div class="step-sub">Sim! 14 dias sem cartão</div></div><button class="btn" style="font-size:11px;padding:3px 8px">✏️</button></div></div>
         </div>
       </div>
 
       <!-- CONVERSATIONS -->
       <div class="page" id="page-conversations">
         <div class="grid-2">
-          <div class="card">
-            <div class="card-header"><span class="card-title">Todas as conversas</span></div>
-            <div class="tab-row"><div class="tab active" onclick="setTab(this)">Todas</div><div class="tab" onclick="setTab(this)">Bot</div><div class="tab" onclick="setTab(this)">Humano</div><div class="tab" onclick="setTab(this)">Pendente</div></div>
-            <div class="conv-item"><div class="avatar">MF</div><div style="flex:1;min-width:0"><div class="conv-name">Maria Fernanda Silva</div><div class="conv-last">Quero saber mais sobre os planos...</div></div><div class="conv-time">agora<br><span class="pill pill-green" style="font-size:10px">Bot</span></div></div>
-            <div class="conv-item"><div class="avatar">JC</div><div style="flex:1;min-width:0"><div class="conv-name">João Carlos Pereira</div><div class="conv-last">Já recebi o boleto, obrigado!</div></div><div class="conv-time">3min</div></div>
-            <div class="conv-item"><div class="avatar">AM</div><div style="flex:1;min-width:0"><div class="conv-name">Ana Martins</div><div class="conv-last">Preciso cancelar minha assinatura</div></div><div class="conv-time">12min<br><span class="pill pill-yellow" style="font-size:10px">Humano</span></div></div>
-            <div class="conv-item"><div class="avatar">RL</div><div style="flex:1;min-width:0"><div class="conv-name">Rafael Lima</div><div class="conv-last">Quando chega meu pedido?</div></div><div class="conv-time">28min</div></div>
-            <div class="conv-item"><div class="avatar">CS</div><div style="flex:1;min-width:0"><div class="conv-name">Carla Souza</div><div class="conv-last">O sistema está fora do ar!</div></div><div class="conv-time">45min<br><span class="pill pill-gray" style="font-size:10px">Pendente</span></div></div>
-          </div>
-          <div class="card">
-            <div class="card-header"><span class="card-title">Maria Fernanda Silva</span><button class="btn btn-primary" style="font-size:12px;padding:4px 10px">Assumir conversa</button></div>
-            <div class="chat-wrap" style="min-height:220px">
-              <div class="bubble bubble-in">Olá, boa tarde!</div>
-              <div class="bubble bubble-out">Boa tarde! Sou a assistente da ZapBot. Como posso ajudar? 😊</div>
-              <div class="bubble bubble-out">1️⃣ Conhecer planos<br>2️⃣ Já sou cliente<br>3️⃣ Falar com humano</div>
-              <div class="bubble bubble-in">Quero saber mais sobre os planos</div>
-              <div class="bubble bubble-out">Temos 3 opções: 🚀 Starter R$79, Pro R$149, Enterprise sob consulta. Detalho algum?</div>
-            </div>
-            <div style="display:flex;gap:8px;margin-top:12px">
-              <input type="text" placeholder="Responder manualmente..." style="flex:1">
-              <button class="btn btn-primary">Enviar</button>
-            </div>
-          </div>
+          <div class="card"><div class="card-header"><span class="card-title">Todas as conversas</span></div><div class="tab-row"><div class="tab active" onclick="setTab(this)">Todas</div><div class="tab" onclick="setTab(this)">Bot</div><div class="tab" onclick="setTab(this)">Humano</div><div class="tab" onclick="setTab(this)">Pendente</div></div><div class="conv-item"><div class="avatar">MF</div><div style="flex:1;min-width:0"><div class="conv-name">Maria Fernanda Silva</div><div class="conv-last">Quero saber mais sobre os planos...</div></div><div style="font-size:11px;color:var(--muted);flex-shrink:0">agora</div></div><div class="conv-item"><div class="avatar">JC</div><div style="flex:1;min-width:0"><div class="conv-name">João Carlos</div><div class="conv-last">Já recebi o boleto, obrigado!</div></div><div style="font-size:11px;color:var(--muted);flex-shrink:0">3min</div></div><div class="conv-item"><div class="avatar">AM</div><div style="flex:1;min-width:0"><div class="conv-name">Ana Martins</div><div class="conv-last">Preciso cancelar minha assinatura</div></div><div style="font-size:11px;color:var(--muted);flex-shrink:0">12min</div></div></div>
+          <div class="card"><div class="card-header"><span class="card-title">Maria Fernanda Silva</span><button class="btn btn-primary" style="font-size:12px;padding:4px 10px">Assumir</button></div><div class="chat-wrap" style="min-height:200px"><div class="bubble bin">Olá!</div><div class="bubble bout">Boa tarde! Como posso ajudar? 😊</div><div class="bubble bout">1️⃣ Planos · 2️⃣ Cliente · 3️⃣ Humano</div><div class="bubble bin">Quero ver os planos</div><div class="bubble bout">Starter R$79, Pro R$149, Enterprise sob consulta. Detalho?</div></div><div style="display:flex;gap:8px;margin-top:12px"><input type="text" placeholder="Responder..."><button class="btn btn-primary">Enviar</button></div></div>
+        </div>
+      </div>
+
+      <!-- ADMIN -->
+      <div class="page" id="page-admin">
+        <div class="card g-gap">
+          <div class="card-header"><span class="card-title">Cadastros aguardando aprovação</span><span class="pill pill-y" id="pending-count">3 pendentes</span></div>
+          <div style="overflow-x:auto"><table class="admin-table"><thead><tr><th>Nome</th><th>Email</th><th>Empresa</th><th>Segmento</th><th>Plano</th><th>Data</th><th>Ações</th></tr></thead><tbody id="pending-tbody"></tbody></table></div>
+        </div>
+        <div class="grid-2">
+          <div class="card"><div class="card-header"><span class="card-title">Usuários ativos</span></div><table class="admin-table"><thead><tr><th>Nome</th><th>Plano</th><th>Status</th><th>Msgs</th></tr></thead><tbody><tr><td><div style="font-weight:600">Ana Oliveira</div><div style="font-size:11px;color:var(--muted)">ana@empresa.com</div></td><td><span class="pill pill-g">Pro</span></td><td><span class="pill pill-g">Ativo</span></td><td>8.420</td></tr><tr><td><div style="font-weight:600">Carlos Santos</div><div style="font-size:11px;color:var(--muted)">carlos@loja.com</div></td><td><span class="pill pill-b">Starter</span></td><td><span class="pill pill-g">Ativo</span></td><td>1.203</td></tr><tr><td><div style="font-weight:600">Juliana Melo</div><div style="font-size:11px;color:var(--muted)">ju@saude.com</div></td><td><span class="pill pill-p">Enterprise</span></td><td><span class="pill pill-g">Ativo</span></td><td>24.891</td></tr></tbody></table></div>
+          <div class="card"><div class="card-header"><span class="card-title">Receita (MRR)</span></div><div class="grid-2" style="margin-bottom:14px"><div class="metric"><div class="metric-label">MRR Total</div><div class="metric-val" style="font-size:20px">R$4.821</div><div class="metric-delta">↑ 12% vs mês anterior</div></div><div class="metric"><div class="metric-label">Usuários</div><div class="metric-val" style="font-size:20px">31</div><div class="metric-delta">+4 este mês</div></div></div><div class="stat-row"><span style="min-width:100px">Starter (12)</span><div class="stat-bar"><div class="stat-fill" style="width:39%"></div></div><span>R$948</span></div><div class="stat-row"><span style="min-width:100px">Pro (16)</span><div class="stat-bar"><div class="stat-fill" style="width:74%"></div></div><span>R$2.384</span></div><div class="stat-row"><span style="min-width:100px">Enterprise (3)</span><div class="stat-bar"><div class="stat-fill" style="width:100%"></div></div><span>R$1.489</span></div></div>
         </div>
       </div>
 
       <!-- SETTINGS -->
       <div class="page" id="page-settings">
         <div class="grid-2">
-          <div class="card">
-            <div class="card-header"><span class="card-title">Configurações gerais</span></div>
-            <div class="sw-row"><div><div class="sw-label">Modo IA avançada</div><div class="sw-sub">Usa GPT para respostas mais inteligentes</div></div><label class="toggle"><input type="checkbox" checked><span class="sl"></span></label></div>
-            <div class="sw-row"><div><div class="sw-label">Transferência automática</div><div class="sw-sub">Transfere para humano quando bot não resolve</div></div><label class="toggle"><input type="checkbox" checked><span class="sl"></span></label></div>
-            <div class="sw-row"><div><div class="sw-label">Detectar sentimento</div><div class="sw-sub">Identifica frustração e acelera resposta</div></div><label class="toggle"><input type="checkbox" checked><span class="sl"></span></label></div>
-            <div class="sw-row"><div><div class="sw-label">Salvar histórico</div><div class="sw-sub">Armazena conversas por 90 dias</div></div><label class="toggle"><input type="checkbox" checked><span class="sl"></span></label></div>
-            <div class="sw-row"><div><div class="sw-label">Notificações por email</div><div class="sw-sub">Alerta quando bot não consegue resolver</div></div><label class="toggle"><input type="checkbox"><span class="sl"></span></label></div>
-            <div class="sw-row"><div><div class="sw-label">Webhook de eventos</div><div class="sw-sub">Envia eventos para sua API externa</div></div><label class="toggle"><input type="checkbox"><span class="sl"></span></label></div>
-          </div>
           <div>
-            <div class="card g-gap">
-              <div class="card-header"><span class="card-title">Integrações</span></div>
-              <div class="conn-item"><div class="conn-icon" style="background:#e0f2fe">🔗</div><div style="flex:1"><div class="conn-name">Webhook / API</div><div class="conn-desc">Conecte seu CRM ou sistema externo</div></div><button class="btn" style="font-size:12px;padding:4px 10px">Configurar</button></div>
-              <div class="conn-item"><div class="conn-icon" style="background:#fef9c3">📊</div><div style="flex:1"><div class="conn-name">Google Sheets</div><div class="conn-desc">Exporta leads automaticamente</div></div><button class="btn" style="font-size:12px;padding:4px 10px">Conectar</button></div>
-              <div class="conn-item"><div class="conn-icon" style="background:#f3e8ff">📧</div><div style="flex:1"><div class="conn-name">Email (SMTP)</div><div class="conn-desc">Notificações e relatórios</div></div><button class="btn" style="font-size:12px;padding:4px 10px">Conectar</button></div>
-            </div>
-            <div class="card">
-              <div class="card-header"><span class="card-title">Plano atual</span></div>
-              <div class="plan-box"><div class="plan-name">Pro</div><div class="plan-price">R$149<span class="plan-period">/mês</span></div></div>
-              <div class="stat-row"><span style="font-size:12px">Conversas</span><div class="stat-bar"><div class="stat-fill" style="width:84%"></div></div><span style="font-size:12px">8.420/10k</span></div>
-              <div class="stat-row"><span style="font-size:12px">Números WA</span><div class="stat-bar"><div class="stat-fill" style="width:60%"></div></div><span style="font-size:12px">3/5</span></div>
-              <div class="stat-row"><span style="font-size:12px">Fluxos ativos</span><div class="stat-bar"><div class="stat-fill" style="width:20%"></div></div><span style="font-size:12px">4/20</span></div>
-              <button class="btn btn-primary" style="width:100%;margin-top:14px">Fazer upgrade</button>
+            <div class="card g-gap"><div class="card-header"><span class="card-title">Configurações gerais</span></div><div class="sw-row"><div><div class="sw-label">Modo IA avançada</div><div class="sw-sub">Usa GPT para respostas inteligentes</div></div><label class="toggle"><input type="checkbox" checked><span class="sl"></span></label></div><div class="sw-row"><div><div class="sw-label">Transferência automática</div><div class="sw-sub">Transfere quando bot não resolve</div></div><label class="toggle"><input type="checkbox" checked><span class="sl"></span></label></div><div class="sw-row"><div><div class="sw-label">Detectar sentimento</div><div class="sw-sub">Identifica frustração na conversa</div></div><label class="toggle"><input type="checkbox" checked><span class="sl"></span></label></div><div class="sw-row"><div><div class="sw-label">Notificações por email</div><div class="sw-sub">Alerta quando bot não resolve</div></div><label class="toggle"><input type="checkbox"><span class="sl"></span></label></div></div>
+            <div class="card"><div class="card-header"><span class="card-title">Integrações</span></div><div class="conn-item"><div class="conn-icon" style="background:#eff6ff">🔗</div><div style="flex:1"><div class="conn-name">Webhook / API</div><div class="conn-desc">Conecte seu CRM</div></div><button class="btn" style="font-size:12px;padding:4px 10px">Configurar</button></div><div class="conn-item"><div class="conn-icon" style="background:#fefce8">📊</div><div style="flex:1"><div class="conn-name">Google Sheets</div><div class="conn-desc">Exporta leads automaticamente</div></div><button class="btn" style="font-size:12px;padding:4px 10px">Conectar</button></div></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><span class="card-title">Meu plano</span></div>
+            <div class="plan-box"><div class="plan-name-d" id="settings-plan-name">Pro</div><div class="plan-price-d">R$149<span style="font-size:14px;font-weight:400">/mês</span></div></div>
+            <div class="stat-row"><span style="font-size:12px;min-width:110px">Conversas</span><div class="stat-bar"><div class="stat-fill" style="width:84%"></div></div><span style="font-size:12px">8.420/10k</span></div>
+            <div class="stat-row"><span style="font-size:12px;min-width:110px">Números WA</span><div class="stat-bar"><div class="stat-fill" style="width:60%"></div></div><span style="font-size:12px">3 / 5</span></div>
+            <div class="stat-row"><span style="font-size:12px;min-width:110px">Fluxos</span><div class="stat-bar"><div class="stat-fill" style="width:20%"></div></div><span style="font-size:12px">4 / 20</span></div>
+            <button class="btn btn-primary" style="width:100%;margin-top:14px" onclick="showScreen('s-pricing')">Ver todos os planos</button>
+            <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+              <div class="card-title" style="margin-bottom:12px">Dados da conta</div>
+              <div class="form-group"><label>Nome</label><input type="text" id="settings-name" value="Usuário"></div>
+              <div class="form-group"><label>Email</label><input type="email" id="settings-email" value="usuario@email.com"></div>
+              <div class="form-group"><label>Nova senha</label><input type="password" placeholder="Deixe em branco para manter"></div>
+              <button class="btn" onclick="showAlert('Dados atualizados! ✓')">Salvar alterações</button>
             </div>
           </div>
         </div>
       </div>
 
-    </div><!-- /content -->
-  </div><!-- /main -->
-</div><!-- /app -->
-
-<!-- MODALS -->
-<div class="modal-bg" id="mNewFlow">
-  <div class="modal">
-    <div class="modal-title">Criar novo fluxo</div>
-    <div class="form-group"><label>Nome do fluxo</label><input type="text" placeholder="Ex: Qualificação de leads"></div>
-    <div class="form-group"><label>Descrição</label><input type="text" placeholder="Para que serve este fluxo?"></div>
-    <div class="form-group"><label>Gatilho de ativação</label><select><option>Primeiro contato do cliente</option><option>Palavra-chave detectada</option><option>Horário programado</option><option>Acionado manualmente</option></select></div>
-    <div class="form-group"><label>Mensagem inicial</label><textarea placeholder="Olá! Seja bem-vindo(a)! Como posso ajudar? 😊"></textarea></div>
-    <div class="modal-footer"><button class="btn" onclick="document.getElementById('mNewFlow').classList.remove('open')">Cancelar</button><button class="btn btn-primary">Criar fluxo</button></div>
+    </div>
   </div>
 </div>
+</div>
 
-<div class="modal-bg" id="mEditFlow">
-  <div class="modal">
-    <div class="modal-title">Editar fluxo — Boas-vindas</div>
-    <div class="form-group"><label>Nome</label><input type="text" value="Boas-vindas & Triagem"></div>
-    <div class="form-group"><label>Mensagem de boas-vindas</label><textarea>Olá! Sou a assistente virtual da *ZapBot*. Como posso te ajudar hoje? 😊
+<!-- MODALS -->
+<div class="modal-bg" id="mNewFlow"><div class="modal"><div class="modal-title">Criar novo fluxo</div><div class="form-group"><label>Nome do fluxo</label><input type="text" placeholder="Ex: Qualificação de leads"></div><div class="form-group"><label>Gatilho</label><select><option>Primeiro contato</option><option>Palavra-chave detectada</option><option>Horário programado</option></select></div><div class="form-group"><label>Mensagem inicial</label><textarea placeholder="Olá! Como posso ajudar? 😊"></textarea></div><div class="modal-footer"><button class="btn" onclick="document.getElementById('mNewFlow').classList.remove('open')">Cancelar</button><button class="btn btn-primary" onclick="document.getElementById('mNewFlow').classList.remove('open');showAlert('Fluxo criado! ✓')">Criar fluxo</button></div></div></div>
+
+<div class="modal-bg" id="mEditFlow"><div class="modal"><div class="modal-title">Editar fluxo</div><div class="form-group"><label>Nome</label><input type="text" value="Boas-vindas & Triagem"></div><div class="form-group"><label>Mensagem de boas-vindas</label><textarea>Olá! Sou a assistente virtual da ZapBot. Como posso ajudar? 😊
 
 1️⃣ Conhecer os planos
 2️⃣ Já sou cliente
-3️⃣ Falar com humano</textarea></div>
-    <div class="form-group"><label>Resposta se não entender</label><textarea>Desculpe, não entendi. Escolha uma das opções ou digite *humano* para falar com atendente.</textarea></div>
-    <div class="form-group"><label>Máx. tentativas antes de transferir</label><input type="number" value="3" style="width:80px"></div>
-    <div class="modal-footer"><button class="btn" onclick="document.getElementById('mEditFlow').classList.remove('open')">Cancelar</button><button class="btn btn-primary">Salvar</button></div>
-  </div>
-</div>
+3️⃣ Falar com humano</textarea></div><div class="form-group"><label>Resposta se não entender</label><textarea>Desculpe, não entendi. Digite humano para falar com atendente.</textarea></div><div class="form-group"><label>Máx. tentativas antes de transferir</label><input type="number" value="3" style="width:80px"></div><div class="modal-footer"><button class="btn" onclick="document.getElementById('mEditFlow').classList.remove('open')">Cancelar</button><button class="btn btn-primary" onclick="document.getElementById('mEditFlow').classList.remove('open');showAlert('Fluxo salvo! ✓')">Salvar</button></div></div></div>
 
-<div class="modal-bg" id="mAddNum">
-  <div class="modal">
-    <div class="modal-title">Adicionar número WhatsApp</div>
-    <div class="form-group"><label>Número (com DDI e DDD)</label><input type="tel" placeholder="+55 11 99999-0000"></div>
-    <div class="form-group"><label>Nome / identificação</label><input type="text" placeholder="Ex: Vendas SP, Suporte..."></div>
-    <div class="form-group"><label>Fluxo padrão</label><select><option>Boas-vindas & Triagem</option><option>Suporte Técnico</option><option>Recuperação de Vendas</option></select></div>
-    <div style="background:var(--light);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--muted);margin-bottom:4px">Após adicionar, você receberá um QR Code para vincular o WhatsApp ao bot.</div>
-    <div class="modal-footer"><button class="btn" onclick="document.getElementById('mAddNum').classList.remove('open')">Cancelar</button><button class="btn btn-primary">Adicionar e gerar QR</button></div>
-  </div>
-</div>
+<div class="modal-bg" id="mAddNum"><div class="modal"><div class="modal-title">Adicionar número WhatsApp</div><div class="form-group"><label>Número (com DDI e DDD)</label><input type="tel" placeholder="+55 11 99999-0000"></div><div class="form-group"><label>Nome / identificação</label><input type="text" placeholder="Ex: Vendas, Suporte..."></div><div class="form-group"><label>Fluxo padrão</label><select><option>Boas-vindas & Triagem</option><option>Suporte Técnico</option></select></div><div style="background:var(--light);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--muted);margin-bottom:4px">Após adicionar, você receberá um QR Code para vincular o WhatsApp.</div><div class="modal-footer"><button class="btn" onclick="document.getElementById('mAddNum').classList.remove('open')">Cancelar</button><button class="btn btn-primary" onclick="document.getElementById('mAddNum').classList.remove('open');showAlert('Número adicionado! Escaneie o QR Code ✓')">Adicionar e gerar QR</button></div></div></div>
 
-<div class="modal-bg" id="mNewKw">
-  <div class="modal">
-    <div class="modal-title">Novo grupo de palavras-chave</div>
-    <div class="form-group"><label>Nome do grupo</label><input type="text" placeholder="Ex: Interesse em vendas"></div>
-    <div class="form-group"><label>Palavras-chave (pressione Enter)</label>
-      <div class="tags-box" id="modal-kw-box"></div>
-      <input type="text" placeholder="Ex: preço, valor, quanto custa..." id="modal-kw-input" onkeydown="addTag(event,'modal-kw-box','modal-kw-input')">
-    </div>
-    <div class="form-group"><label>Ação ao detectar</label><select><option>Acionar fluxo</option><option>Enviar mensagem</option><option>Transferir para humano</option></select></div>
-    <div class="form-group"><label>Resposta automática</label><textarea placeholder="Mensagem enviada quando esta palavra é detectada..."></textarea></div>
-    <div class="modal-footer"><button class="btn" onclick="document.getElementById('mNewKw').classList.remove('open')">Cancelar</button><button class="btn btn-primary">Criar grupo</button></div>
-  </div>
-</div>
+<div class="modal-bg" id="mNewKw"><div class="modal"><div class="modal-title">Novo grupo de palavras-chave</div><div class="form-group"><label>Nome do grupo</label><input type="text" placeholder="Ex: Interesse em vendas"></div><div class="form-group"><label>Palavras-chave (pressione Enter)</label><div class="tags-box" id="modal-kw-box"></div><input type="text" placeholder="Ex: preço, valor..." id="modal-kw-input" onkeydown="addTag(event,'modal-kw-box','modal-kw-input')"></div><div class="form-group"><label>Ação ao detectar</label><select><option>Acionar fluxo</option><option>Enviar mensagem</option><option>Transferir para humano</option></select></div><div class="form-group"><label>Resposta automática</label><textarea placeholder="Mensagem enviada quando detectado..."></textarea></div><div class="modal-footer"><button class="btn" onclick="document.getElementById('mNewKw').classList.remove('open')">Cancelar</button><button class="btn btn-primary" onclick="document.getElementById('mNewKw').classList.remove('open');showAlert('Grupo criado! ✓')">Criar grupo</button></div></div></div>
 
-<div class="modal-bg" id="mNewCta">
-  <div class="modal">
-    <div class="modal-title">Nova chamada para ação</div>
-    <div class="form-group"><label>Nome da CTA</label><input type="text" placeholder="Ex: Oferecer upgrade de plano"></div>
-    <div class="form-group"><label>Palavras que ativam</label><input type="text" placeholder="Ex: upgrade, mais recursos, plano maior"></div>
-    <div class="form-group"><label>Mensagem</label><textarea placeholder="🚀 Turbine seu plano! Com o Pro você tem 5x mais conversas por apenas R$149/mês!"></textarea></div>
-    <div class="form-group"><label>Link de destino (opcional)</label><input type="text" placeholder="https://..."></div>
-    <div class="modal-footer"><button class="btn" onclick="document.getElementById('mNewCta').classList.remove('open')">Cancelar</button><button class="btn btn-primary">Criar CTA</button></div>
-  </div>
-</div>
+<div class="modal-bg" id="mNewCta"><div class="modal"><div class="modal-title">Nova chamada para ação</div><div class="form-group"><label>Nome da CTA</label><input type="text" placeholder="Ex: Oferecer upgrade"></div><div class="form-group"><label>Palavras que ativam</label><input type="text" placeholder="Ex: upgrade, plano maior..."></div><div class="form-group"><label>Mensagem</label><textarea placeholder="🚀 Turbine seu plano! Pro por R$149/mês!"></textarea></div><div class="modal-footer"><button class="btn" onclick="document.getElementById('mNewCta').classList.remove('open')">Cancelar</button><button class="btn btn-primary" onclick="document.getElementById('mNewCta').classList.remove('open');showAlert('CTA criada! ✓')">Criar CTA</button></div></div></div>
+
+<div class="alert" id="toast"><span>✅</span><span id="toast-msg">Salvo!</span></div>
 
 <script>
-var kwData=[
-  {name:'Interesse em vendas',tags:['preço','valor','plano','quanto custa'],action:'Acionar fluxo de vendas',active:true},
-  {name:'Suporte / Problema',tags:['problema','erro','não funciona','ajuda'],action:'Transferir para humano',active:true},
-  {name:'Cancelamento',tags:['cancelar','cancelamento','desistir'],action:'Acionar fluxo retenção',active:true},
-  {name:'Desconto / Promoção',tags:['desconto','cupom','promoção','oferta'],action:'Enviar cupom especial',active:false}
+var currentUser=null,selectedPlan='pro',toastTimer;
+var pendingUsers=[
+  {id:1,nome:'Lucas Pereira',email:'lucas@startup.com',empresa:'StartupX',segmento:'E-commerce',plano:'Pro',data:'Hoje 09:32'},
+  {id:2,nome:'Fernanda Costa',email:'fe@clinica.com',empresa:'Clínica Vida',segmento:'Saúde',plano:'Starter',data:'Hoje 10:15'},
+  {id:3,nome:'Rafael Moura',email:'rafa@imob.com',empresa:'ImobPrime',segmento:'Imobiliária',plano:'Enterprise',data:'Ontem 17:48'}
 ];
+var kwData=[
+  {name:'Interesse em vendas',tags:['preço','valor','plano'],action:'Acionar fluxo de vendas',active:true},
+  {name:'Suporte / Problema',tags:['problema','erro','ajuda'],action:'Transferir para humano',active:true},
+  {name:'Cancelamento',tags:['cancelar','cancelamento'],action:'Acionar fluxo retenção',active:true},
+  {name:'Desconto / Promoção',tags:['desconto','cupom','oferta'],action:'Enviar cupom especial',active:false}
+];
+var pageNames={dashboard:'Dashboard',flows:'Fluxos do Bot',keywords:'Palavras-chave',ctas:'Chamadas para Ação',whatsapp:'Configuração WhatsApp',contexts:'Contextos do Bot',conversations:'Conversas',admin:'Painel Admin',settings:'Configurações'};
 
-var titles={dashboard:'Dashboard',flows:'Fluxos do Bot',keywords:'Palavras-chave',ctas:'Chamadas para Ação',whatsapp:'Configuração WhatsApp',contexts:'Contextos do Bot',conversations:'Conversas',settings:'Configurações'};
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')});
+  var el=document.getElementById(id);
+  if(el){el.classList.add('active');}
+  window.scrollTo(0,0);
+}
+
+function doLogin(){
+  var email=document.getElementById('login-email').value.trim();
+  var pass=document.getElementById('login-pass').value;
+  var err=document.getElementById('login-err');
+  if(email==='admin@zapbot.com'&&pass==='admin123'){
+    currentUser={nome:'Admin',email:email,role:'admin',plan:'Pro'};launchApp(true);return;
+  }
+  if(email&&pass.length>=4){
+    currentUser={nome:email.split('@')[0],email:email,role:'user',plan:'Pro'};launchApp(false);return;
+  }
+  err.classList.add('show');setTimeout(function(){err.classList.remove('show')},3000);
+}
+
+function launchApp(isAdmin){
+  showScreen('s-app');
+  var nm=currentUser.nome.charAt(0).toUpperCase()+currentUser.nome.slice(1);
+  document.getElementById('user-name').textContent=nm;
+  document.getElementById('user-av').textContent=nm.substring(0,2).toUpperCase();
+  document.getElementById('user-role').textContent=isAdmin?'Pro · Admin':'Pro · Usuário';
+  document.getElementById('settings-name').value=nm;
+  document.getElementById('settings-email').value=currentUser.email;
+  var adminNav=document.getElementById('nav-admin');
+  if(adminNav)adminNav.style.display=isAdmin?'flex':'none';
+  renderKw();renderPending();
+  go('dashboard',document.querySelector('.nav-item'));
+}
+
+function doLogout(){
+  currentUser=null;showScreen('s-login');
+  document.getElementById('login-email').value='';
+  document.getElementById('login-pass').value='';
+}
+
+function selPlan(el,plan){
+  document.querySelectorAll('.plan-opt').forEach(function(p){p.classList.remove('selected')});
+  el.classList.add('selected');selectedPlan=plan;
+}
+
+function doRegister(){
+  var nome=document.getElementById('reg-nome').value.trim();
+  var email=document.getElementById('reg-email').value.trim();
+  var pass=document.getElementById('reg-pass').value;
+  var pass2=document.getElementById('reg-pass2').value;
+  var empresa=document.getElementById('reg-empresa').value.trim();
+  var seg=document.getElementById('reg-segmento').value;
+  var err=document.getElementById('reg-err');
+  if(!nome||!email||!empresa||!seg||pass.length<6||pass!==pass2){
+    err.textContent=pass!==pass2?'As senhas não coincidem.':'Preencha todos os campos (senha mín. 6 chars).';
+    err.classList.add('show');setTimeout(function(){err.classList.remove('show')},3500);return;
+  }
+  pendingUsers.push({id:Date.now(),nome:nome,email:email,empresa:empresa,segmento:seg,plano:selectedPlan.charAt(0).toUpperCase()+selectedPlan.slice(1),data:'Agora'});
+  document.getElementById('pending-email').textContent=email;
+  showScreen('s-pending');
+}
 
 function go(id,el){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
   document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active')});
-  var pg=document.getElementById('page-'+id);
-  if(pg)pg.classList.add('active');
+  var pg=document.getElementById('page-'+id);if(pg)pg.classList.add('active');
   if(el)el.classList.add('active');
-  document.getElementById('topbar-title').textContent=titles[id]||id;
+  document.getElementById('topbar-title').textContent=pageNames[id]||id;
   if(id==='keywords')renderKw();
+  if(id==='admin')renderPending();
 }
 
 function renderKw(){
   var c=document.getElementById('kw-list');if(!c)return;
   c.innerHTML=kwData.map(function(g){
-    return '<div class="flow-card"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px"><span class="flow-name">'+g.name+'</span><span class="pill '+(g.active?'pill-green':'pill-gray')+'">'+(g.active?'Ativo':'Inativo')+'</span></div><div style="margin:6px 0">'+g.tags.map(function(t){return '<span class="kw-tag">'+t+'</span>'}).join('')+'</div><div class="flow-desc">'+g.action+'</div></div>';
+    return '<div class="flow-card"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px"><span class="flow-name">'+g.name+'</span><span class="pill '+(g.active?'pill-g':'pill-gray')+'">'+(g.active?'Ativo':'Inativo')+'</span></div><div style="margin:6px 0">'+g.tags.map(function(t){return '<span class="kw-tag">'+t+'</span>'}).join('')+'</div><div class="flow-desc">'+g.action+'</div></div>';
   }).join('');
+}
+
+function renderPending(){
+  var tb=document.getElementById('pending-tbody');if(!tb)return;
+  var pp={'Starter':'pill-b','Pro':'pill-g','Enterprise':'pill-p'};
+  tb.innerHTML=pendingUsers.length===0
+    ?'<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted)">Nenhum cadastro pendente ✓</td></tr>'
+    :pendingUsers.map(function(u){
+      return '<tr><td><div style="font-weight:600">'+u.nome+'</div><div style="font-size:11px;color:var(--muted)">'+u.email+'</div></td><td>'+u.empresa+'</td><td>'+u.segmento+'</td><td><span class="pill '+(pp[u.plano]||'pill-gray')+'">'+u.plano+'</span></td><td>'+u.data+'</td><td><div class="action-btns"><button class="act-btn act-approve" onclick="approveUser('+u.id+')">✓ Aprovar</button><button class="act-btn act-reject" onclick="rejectUser('+u.id+')">✗ Rejeitar</button></div></td></tr>';
+    }).join('');
+  var b=document.getElementById('admin-badge');if(b)b.textContent=pendingUsers.length;
+  var pc=document.getElementById('pending-count');if(pc)pc.textContent=pendingUsers.length+' pendente'+(pendingUsers.length!==1?'s':'');
+}
+
+function approveUser(id){pendingUsers=pendingUsers.filter(function(u){return u.id!==id});renderPending();showAlert('Usuário aprovado! Email enviado ✓');}
+function rejectUser(id){pendingUsers=pendingUsers.filter(function(u){return u.id!==id});renderPending();showAlert('Cadastro rejeitado.');}
+
+function toggleBilling(){
+  var annual=document.getElementById('billing-toggle').checked;
+  document.getElementById('price-starter').textContent=annual?'R$63':'R$79';
+  document.getElementById('price-pro').textContent=annual?'R$119':'R$149';
+}
+
+function toggleFaq(el){
+  var open=el.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(function(f){f.classList.remove('open')});
+  if(!open)el.classList.add('open');
 }
 
 function addTag(e,boxId,inputId){
   if(e.key!=='Enter')return;
-  var inp=document.getElementById(inputId);
-  var val=inp.value.trim();if(!val)return;
+  var inp=document.getElementById(inputId);var val=inp.value.trim();if(!val)return;
   var box=document.getElementById(boxId);
-  var tag=document.createElement('span');
-  tag.className='kw-tag';
-  tag.innerHTML=val+'<span class="rm" onclick="this.parentNode.remove()">×</span>';
+  var tag=document.createElement('span');tag.className='kw-tag';
+  tag.innerHTML=val+'<span class="rm" onclick="this.parentNode.remove()">x</span>';
   box.appendChild(tag);inp.value='';e.preventDefault();
 }
 
-function setTab(el){
-  el.parentNode.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});
-  el.classList.add('active');
+function setTab(el){el.parentNode.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});el.classList.add('active');}
+
+function showAlert(msg){
+  var t=document.getElementById('toast'),m=document.getElementById('toast-msg');
+  m.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){t.classList.remove('show')},3000);
 }
 
 document.querySelectorAll('.modal-bg').forEach(function(m){
   m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('open')});
 });
-
-renderKw();
+document.getElementById('login-pass').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
 </script>
 </body>
 </html>
